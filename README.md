@@ -1,10 +1,4 @@
-# PO-HAO is adorable
-# Goal of this project
-# Po Hao <3
 # I have succesfully created a fork and cloned elsewhere
-
-
-# I think we should do the capstone!!!
 
 ## Establish a supervised neural network predicting the lifetime of the battery
 

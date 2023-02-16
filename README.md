@@ -1,6 +1,8 @@
 # PO-HAO is adorable
 # Goal of this project
 # Po Hao <3
+# I have succesfully created a fork and cloned elsewhere
+
 
 # I think we should do the capstone!!!
 

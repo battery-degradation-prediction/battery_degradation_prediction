@@ -83,6 +83,31 @@ def remove_outlier(dataframe: pd.DataFrame, column: str) -> pd.DataFrame:
 
     return dataframe
 
+def remove_unwanted_current(dataframe, column, small, large):
+    """Remove the value between small and large in column of the dataframe and replace them
+    with NaN, and the inplace is always True.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        The dataframe containing unwanted values
+    column: str
+        The column name for searching unwanted values
+    small: float
+        The smaller number of specified range
+    large: float
+        The larger number of specified range
+        
+    Returns
+    -------
+    dataframe : pd.DataFrame
+        The dataframe with a clean column.
+    """
+    # Select values in column that are outside of the specified range
+    dataframe[column] = dataframf[column][(dataframe[column] < small) | (dataframe[column] > large)]
+    
+    # Return filtered DataFrame column 
+    return dataframe
 
 # func to remove NaN in columns
 def remove_nan_from_data(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -208,25 +233,6 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame):
     for i in range(len(df_discharge)):
         capcity_during_discharge_list.append(abs(df_discharge['elapsed_time_per_cycle'][i] * df_discharge['current_measured'][i]))
     return capcity_during_discharge_list
-
-def remove_current_in_k_value(dataframe, column, k):
-    """Remove current that is larger than -k and smaller than k
-    and replace them to NAN.     
-    Parameters
-    ----------
-    dataframe : pd.DataFrame
-        The dataframe containing only the discharge cycles
-    column : str
-        The column name for remove k values
-    k: float
-        The values wanted to be removed
-    Returns
-    -------
-    dataframe : pd.DataFrame
-        The dataframe without number from k to -k.
-    """
-    dataframe[column] = dataframe[column][abs(dataframe[column]) > k]
-    return dataframe
 
 def main():
     """Main function"""

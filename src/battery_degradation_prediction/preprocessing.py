@@ -190,10 +190,27 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
     df_discharge.drop(drop_list, inplace=True)
     return df_discharge
 
+def calc_capacity_during_discharge(df_discharge: pd.DataFrame):
+    """Calculates discharge capacity during each cycle using the 
+    elapsed_time_per_cycle and current_measured within the dataframe.
+
+    Parameters
+    ----------
+    df_discharge : pd.DataFrame
+        The dataframe containing only the discharge cycles
+
+    Returns
+    -------
+    capcity_during_discharge_list : list[float]
+        A list containing the discharge capacity for all cycles.
+    """
+    capcity_during_discharge_list = []
+    for i in range(len(df_discharge)):
+        capcity_during_discharge_list.append(abs(df_discharge['elapsed_time_per_cycle'][i] * df_discharge['current_measured'][i]))
+    return capcity_during_discharge_list
 
 def main():
     """Main function"""
-    pd.options.mode.chained_assignment = None  # default='warn'
     path = "../../data/B0005.csv"
     df = load_data(path)
     df = df.iloc[:10500]
@@ -202,9 +219,12 @@ def main():
     df["elapsed_time"] = df["time"].apply(calc_test_time_from_datetime, args=(df["time"].iloc[0],))
     df_discharge = isolate_discharge_cyc_data(df)
     time_elasped_list = add_elapsed_time_per_cycle(df_discharge)
-    df_discharge["elapsed_time_per_cycle"] = time_elasped_list
+    df_discharge.insert(len(df_discharge.columns), "elapsed_time_per_cycle", time_elasped_list)
     # remove_outlier(df, "current_measured")
     df_discharge.reset_index(drop=True, inplace=True)
+    capcity_during_discharge = calc_capacity_during_discharge(df_discharge)
+    df_discharge.insert(len(df_discharge.columns), "capcity_during_discharge", capcity_during_discharge)
+
 
     _, ax = plt.subplots(1, 2, figsize=(18, 5))
     sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0])

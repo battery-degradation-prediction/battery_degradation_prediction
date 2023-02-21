@@ -1,5 +1,6 @@
 [MESSAGES CONTROL]
 
 # Set good names.
-good-names=i,j,k,x,y,z,df,ax
+good-names=i,j,k,x,y,z,df,ax,X,X_train,X_test,n
 
+generated-members=numpy.*, torch.*

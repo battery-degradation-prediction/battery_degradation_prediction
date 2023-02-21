@@ -1,10 +1,12 @@
+[![Build Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/build/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction//actions?query=workflow%3Abuild)
+[![Codecov](https://img.shields.io/codecov/c/gh/battery-degradation-prediction/battery_degradation_prediction?token=HYF4KEB84L)](https://codecov.io/gh/battery-degradation-prediction/battery_degradation_prediction)
 [![Lint Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/lint/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction/actions?query=workflow%3Alint)
 [![Documentation](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/documentation/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 >>>>>>> master
 
 # User Stories
-final check
+new coverage
 ### Informed Consumer
 
 The User, being a proud owner of a cellular device and somewhat technologically inclined, is looking to purchase a new phone with the longest lasting battery life. The user is proficient at navigating websites, but doesn’t have any kind of technical background in battery science and/or engineering. Therefore, the user is looking for a simple interface that allows them to select a phone model (i.e., battery chemistry), and it will output an estimated “lifetime” (i.e., cycle number) of the phone battery.

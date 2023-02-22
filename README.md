@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 # User Stories
 
 ### Informed Consumer
->>>>>>> 992a41bf1eaf95372939c857808b9713cf84abf4
 
 The User, being a proud owner of a cellular device and somewhat technologically inclined, is looking to purchase a new phone with the longest lasting battery life. The user is proficient at navigating websites, but doesn’t have any kind of technical background in battery science and/or engineering. Therefore, the user is looking for a simple interface that allows them to select a phone model (i.e., battery chemistry), and it will output an estimated “lifetime” (i.e., cycle number) of the phone battery.
 

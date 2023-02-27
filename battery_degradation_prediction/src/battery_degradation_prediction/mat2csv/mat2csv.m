@@ -14,7 +14,7 @@ function dummy = mat2csv(filepath, output_name)
     num_row = size(cycle_cell, 3);
     num_cycle_charge = 0;
     num_cycle_discharge = 0;
-    %num_row = 150; % This variable determines how many rows are converting
+    %num_row = 150; % This variable determines how many rows are converted
                     % into the csv file.
 
     for row = 1:num_row

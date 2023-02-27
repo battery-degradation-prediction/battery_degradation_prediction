@@ -64,12 +64,8 @@ def calc_test_time_from_datetime(target_time:datetime, start_time:datetime) -> f
     test_time : datetime.datetime
         unit: hour
     """
-    #test_time = []
     second_to_hour = 1./3600.
-    #for i in range(len(dataframe)):
-    #    test_time.append(((dataframe['time'][i] - dataframe['time'][0]).seconds)*second_to_hour)
     time_elapsed = (target_time - start_time).seconds * second_to_hour
-    #dataframe['test_time(h)'] = test_time
     return time_elapsed
 
 # func to look only at the discharge cycles within dataframe
@@ -83,12 +79,11 @@ def add_elapsed_time_per_cycle(df:pd.DataFrame) -> list[float]:
     time_elasped_list = []
     for time in df.groupby("cycle")["time"]:
         start_time = time[1].iloc[0]
-        #print('='* 15)
         for target_time in time[1]:
-            #print(f"{start_time} / {target_time}")
             time_elasped = calc_test_time_from_datetime(target_time, start_time)
             time_elasped_list.append(time_elasped)
     return time_elasped_list
+
 def main():
     path = '../data/B0005.csv'
     df = load_data(path)

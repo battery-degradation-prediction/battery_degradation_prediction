@@ -3,12 +3,22 @@ import pandas as pd
 from datetime import datetime
 
 # func to convert datetimes in dataframe to time objects    WORKS
-def convert_date_time_str_to_obj(date_time_str):
-    datetime_list = date_time_str.split('-')
-    #date_str = "-".join(datetime_list[:3])
-    #time_str = "-".join(datetime_list[3:])
+def convert_date_time_str_to_obj(date_time_str:str):
+    """This function converts a string into a datatime object
+    
+    Parameters
+    ----------
+    date_time_str : str
+        A string object that records the datetime information in the form
+        YYYY-mm-HH-MM-SS
+
+    Returns
+    -------
+    time_object : datetime
+        A datetime object containing year, month, day, hour, minute, and second.
+    """
+
     time_object = datetime.strptime(date_time_str, '%Y-%m-%d-%H-%M-%S')
-    #rounded_dt1 = dt1.replace(hour=0, minute=0, second=0, microsecond=0)
     return time_object
 
 # func to remove current outliers (ie current that's is close to zero) from dataframe    NOT SURE
@@ -52,4 +62,10 @@ def calc_test_time_in_h_from_datetime(dataframe):
 def isolating_discharge_cyc_data(dataframe):
     dataframe = dataframe[dataframe['type'] == 'discharging']
     return dataframe
+
+def main():
+
+if __name__ == "__main__":
+    main()
+
 

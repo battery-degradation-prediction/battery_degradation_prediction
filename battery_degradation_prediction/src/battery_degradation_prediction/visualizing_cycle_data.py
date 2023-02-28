@@ -1,3 +1,7 @@
+"""visualization module"""
+
+import matplotlib.pyplot as plt
+import seaborn as sns
 # visulizing_cycle_data(dataframe)
 fig, ax = plt.subplots(3,1, figsize = (14,26))
 

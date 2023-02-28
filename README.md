@@ -1,3 +1,6 @@
+[![Documentation](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/documentation/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction)
+[![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # User Stories
 
 ### Informed Consumer

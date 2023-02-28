@@ -1,7 +1,10 @@
 """preprocessing data module"""
 from typing import Tuple
 from datetime import datetime
+import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from load_data import load_data
 
 # func to convert datetimes in dataframe to time objects    WORKS
@@ -25,7 +28,7 @@ def convert_datetime_str_to_obj(date_time_str: str) -> datetime:
 
 
 # func to remove current outliers (ie current that's is close to zero) from dataframe    NOT SURE
-def find_outlier(dataframe: pd.DataFrame, column: str) -> Tuple(pd.Series, pd.Series):
+def find_outlier(dataframe: pd.DataFrame, column: str) -> Tuple[pd.Series, pd.Series]:
     """Find the samples that are outside the lower and upper bound of IQR.
 
     Parameters
@@ -161,24 +164,56 @@ def add_elapsed_time_per_cycle(df: pd.DataFrame) -> list[float]:
     return time_elasped_list
 
 
+def remove_jump_voltage(df_discharge: pd.DataFrame):
+    """Remove the rows that jump back from minima inplacely.
+
+    Parameters
+    ----------
+    df_discharge : pd.DataFrame
+        The dataframe containing only the discharge cycles
+    
+    Returns
+    -------
+    df_discharge : pd.DataFrame
+        The dataframe containing only the discharge cycles without jump back rows
+    """
+    cummulative_num = 0
+    drop_ranges = []
+    for voltage_group in df_discharge.groupby("cycle")["voltage_measured"]:
+        min_voltage_index = np.argmin(voltage_group[1])
+        num_group = voltage_group[1].shape[0]
+        drop_ranges.append(range(cummulative_num+min_voltage_index+1, cummulative_num+num_group))
+        cummulative_num += num_group
+    drop_list = [r for ranges in drop_ranges for r in ranges]
+    df_discharge.drop(drop_list, inplace=True)
+    return df_discharge
+
 def main():
     """Main function"""
-    path = "../data/B0005.csv"
+    pd.options.mode.chained_assignment = None  # default='warn'
+    path = "../../data/B0005.csv"
     df = load_data(path)
-    # df = df.iloc[13000:15000]
+    df = df.iloc[:10500]
 
     df["time"] = df["datetime"].apply(convert_datetime_str_to_obj)
     df["elapsed_time"] = df["time"].apply(
         calc_test_time_from_datetime, args=(df["time"].iloc[0],)
     )
     df_discharge = isolate_discharge_cyc_data(df)
-    df_discharge["elapsed_time_per_cycle"] = add_elapsed_time_per_cycle(df_discharge)
+    time_elasped_list = add_elapsed_time_per_cycle(df_discharge)
+    df_discharge["elapsed_time_per_cycle"] = time_elasped_list
     # remove_outlier(df, "current_measured")
+    df_discharge.reset_index(drop=True, inplace=True)
 
-    # add_time_elapsed_col(df_discharge)
-    for group in df_discharge.groupby("cycle"):
-        print(group[1].head())
-        print("=" * 15)
+    
+    _, ax = plt.subplots(1,2, figsize=(18,5))
+    sns.scatterplot(data=df_discharge, x='time', y='voltage_measured', hue='cycle', ax=ax[0])
+    remove_jump_voltage(df_discharge)
+    sns.scatterplot(data=df_discharge, x='time', y='voltage_measured', hue='cycle', ax=ax[1])
+    ax[0].set_title("Raw voltage data")
+    ax[1].set_title("Remove jump voltage")
+    plt.show()
+
     return df
 
 

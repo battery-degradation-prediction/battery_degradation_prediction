@@ -1,4 +1,5 @@
 [MESSAGES CONTROL]
 
 # Set good names.
-good-names=i,j,k,x,y,z,df
+good-names=i,j,k,x,y,z,df,ax
+

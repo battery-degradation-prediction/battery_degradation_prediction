@@ -12,36 +12,27 @@ import seaborn as sns
 
 # i) discharge cap vs cycle
 def plot_cycle_capacity(df_discharge):
-    """plot cycle capacity"""
-    _, ax = plt.subplots(3, 1, figsize=(14, 26))
+    """plot cycle capacity
+    """
+    _, ax = plt.subplots(3,1, figsize = (14,26))
     sns.scatterplot(data=df_discharge, x="cycle", y="capacity", ax=ax[0])
     return 0
 
-
 # ii) temperatrue_measured vs time
 def plot_temperatrue_time(df_discharge):
-    """plot temperatrue time"""
-    _, ax = plt.subplots(3, 1, figsize=(14, 26))
-    sns.scatterplot(
-        data=df_discharge,
-        x="test_time(h)",
-        y="temperatrue_measured",
-        hue="cycle",
-        ax=ax[1],
-    )
+    """plot temperatrue time
+    """
+    _, ax = plt.subplots(3,1, figsize = (14,26))
+    sns.scatterplot(data=df_discharge, x="test_time(h)", y="temperatrue_measured", hue='cycle', ax=ax[1])
     return 0
-
-
 # iii) discharge cap vs time of cycle
 
 # iv) V vs time
 def plot_temperatrue_time_second(df_discharge):
-    """plot temperatrue time"""
-    _, ax = plt.subplots(3, 1, figsize=(14, 26))
-    sns.scatterplot(
-        data=df_discharge, x="test_time(h)", y="voltage_measured", hue="cycle", ax=ax[2]
-    )
+    """plot temperatrue time
+    """
+    _, ax = plt.subplots(3,1, figsize = (14,26))
+    sns.scatterplot(data=df_discharge, x="test_time(h)", y="voltage_measured", hue='cycle', ax=ax[2])
     return 0
 
-
-# v) V vs capacity
+#v) V vs capacity

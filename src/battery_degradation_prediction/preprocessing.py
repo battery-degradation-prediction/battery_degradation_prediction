@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from load_data import load_data
+from battery_degradation_prediction.load_data import load_data
 
 # func to convert datetimes in dataframe to time objects    WORKS
 def convert_datetime_str_to_obj(date_time_str: str) -> datetime:

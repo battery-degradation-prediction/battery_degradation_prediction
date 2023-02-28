@@ -171,7 +171,7 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
     ----------
     df_discharge : pd.DataFrame
         The dataframe containing only the discharge cycles
-    
+
     Returns
     -------
     df_discharge : pd.DataFrame
@@ -182,11 +182,14 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
     for voltage_group in df_discharge.groupby("cycle")["voltage_measured"]:
         min_voltage_index = np.argmin(voltage_group[1])
         num_group = voltage_group[1].shape[0]
-        drop_ranges.append(range(cummulative_num+min_voltage_index+1, cummulative_num+num_group))
+        drop_ranges.append(
+            range(cummulative_num + min_voltage_index + 1, cummulative_num + num_group)
+        )
         cummulative_num += num_group
     drop_list = [r for ranges in drop_ranges for r in ranges]
     df_discharge.drop(drop_list, inplace=True)
     return df_discharge
+
 
 def main():
     """Main function"""
@@ -196,20 +199,17 @@ def main():
     df = df.iloc[:10500]
 
     df["time"] = df["datetime"].apply(convert_datetime_str_to_obj)
-    df["elapsed_time"] = df["time"].apply(
-        calc_test_time_from_datetime, args=(df["time"].iloc[0],)
-    )
+    df["elapsed_time"] = df["time"].apply(calc_test_time_from_datetime, args=(df["time"].iloc[0],))
     df_discharge = isolate_discharge_cyc_data(df)
     time_elasped_list = add_elapsed_time_per_cycle(df_discharge)
     df_discharge["elapsed_time_per_cycle"] = time_elasped_list
     # remove_outlier(df, "current_measured")
     df_discharge.reset_index(drop=True, inplace=True)
 
-    
-    _, ax = plt.subplots(1,2, figsize=(18,5))
-    sns.scatterplot(data=df_discharge, x='time', y='voltage_measured', hue='cycle', ax=ax[0])
+    _, ax = plt.subplots(1, 2, figsize=(18, 5))
+    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0])
     remove_jump_voltage(df_discharge)
-    sns.scatterplot(data=df_discharge, x='time', y='voltage_measured', hue='cycle', ax=ax[1])
+    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[1])
     ax[0].set_title("Raw voltage data")
     ax[1].set_title("Remove jump voltage")
     plt.show()

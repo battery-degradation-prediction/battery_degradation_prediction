@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/build/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction//actions?query=workflow%3Abuild)
+[![Codecov](https://img.shields.io/codecov/c/gh/battery-degradation-prediction/battery_degradation_prediction?token=HYF4KEB84L)](https://codecov.io/gh/battery-degradation-prediction/battery_degradation_prediction)
 [![Lint Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/lint/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction/actions?query=workflow%3Alint)
 [![Documentation](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/documentation/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

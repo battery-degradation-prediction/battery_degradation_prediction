@@ -47,7 +47,7 @@ jobs:
     - name: Test with pytest
       run: |
         source .venv/bin/activate
-        pytest --cov-report xml --cov=src/ tests/
+        pytest --cov-report xml --cov=tests/
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2

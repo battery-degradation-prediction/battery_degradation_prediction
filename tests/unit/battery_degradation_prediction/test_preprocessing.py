@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-from battery_degradation_prediction import preprocessing
+#from battery_degradation_prediction import preprocessing
 
 def get_data():
     """Obtain data from https://uwdirect.github.io/SEDS_content/atomradii.csv"""

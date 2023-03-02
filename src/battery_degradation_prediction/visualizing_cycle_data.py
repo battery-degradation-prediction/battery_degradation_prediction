@@ -23,7 +23,11 @@ def plot_temperatrue_time(df_discharge):
     """plot temperatrue time"""
     _, ax = plt.subplots(3, 1, figsize=(14, 26))
     sns.scatterplot(
-        data=df_discharge, x="test_time(h)", y="temperatrue_measured", hue="cycle", ax=ax[1]
+        data=df_discharge,
+        x="test_time(h)",
+        y="temperatrue_measured",
+        hue="cycle",
+        ax=ax[1],
     )
     return 0
 

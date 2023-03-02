@@ -193,7 +193,6 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
 
 def main():
     """Main function"""
-    pd.options.mode.chained_assignment = None  # default='warn'
     path = "../../data/B0005.csv"
     df = load_data(path)
     df = df.iloc[:10500]
@@ -202,7 +201,7 @@ def main():
     df["elapsed_time"] = df["time"].apply(calc_test_time_from_datetime, args=(df["time"].iloc[0],))
     df_discharge = isolate_discharge_cyc_data(df)
     time_elasped_list = add_elapsed_time_per_cycle(df_discharge)
-    df_discharge["elapsed_time_per_cycle"] = time_elasped_list
+    df_discharge.insert(len(df_discharge.columns), "elapsed_time_per_cycle", time_elasped_list)
     # remove_outlier(df, "current_measured")
     df_discharge.reset_index(drop=True, inplace=True)
 

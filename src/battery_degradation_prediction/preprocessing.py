@@ -83,6 +83,31 @@ def remove_outlier(dataframe: pd.DataFrame, column: str) -> pd.DataFrame:
 
     return dataframe
 
+def remove_unwanted_current(dataframe, column, small, large):
+    """Remove the value between small and large in column of the dataframe and replace them
+    with NaN, and the inplace is always True.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        The dataframe containing unwanted values
+    column: str
+        The column name for searching unwanted values
+    small: float
+        The smaller number of specified range
+    large: float
+        The larger number of specified range
+        
+    Returns
+    -------
+    dataframe : pd.DataFrame
+        The dataframe with a clean column.
+    """
+    # Select values in column that are outside of the specified range
+    dataframe[column] = dataframf[column][(dataframe[column] < small) | (dataframe[column] > large)]
+    
+    # Return filtered DataFrame column 
+    return dataframe
 
 # func to remove NaN in columns
 def remove_nan_from_data(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -190,6 +215,24 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
     df_discharge.drop(drop_list, inplace=True)
     return df_discharge
 
+def calc_capacity_during_discharge(df_discharge: pd.DataFrame):
+    """Calculates discharge capacity during each cycle using the 
+    elapsed_time_per_cycle and current_measured within the dataframe.
+
+    Parameters
+    ----------
+    df_discharge : pd.DataFrame
+        The dataframe containing only the discharge cycles
+
+    Returns
+    -------
+    capcity_during_discharge_list : list[float]
+        A list containing the discharge capacity for all cycles.
+    """
+    capcity_during_discharge_list = []
+    for i in range(len(df_discharge)):
+        capcity_during_discharge_list.append(abs(df_discharge['elapsed_time_per_cycle'][i] * df_discharge['current_measured'][i]))
+    return capcity_during_discharge_list
 
 def capacity_during_discharge(df_discharge):
     """TODO"""
@@ -223,6 +266,9 @@ def main():
     df_discharge.insert(len(df_discharge.columns), "elapsed_time_per_cycle", time_elasped_list)
     capacity_during_discharge(df_discharge)
     df_discharge.reset_index(drop=True, inplace=True)
+    capcity_during_discharge = calc_capacity_during_discharge(df_discharge)
+    df_discharge.insert(len(df_discharge.columns), "capcity_during_discharge", capcity_during_discharge)
+
 
     return df
 

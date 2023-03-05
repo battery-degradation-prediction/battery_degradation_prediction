@@ -162,7 +162,7 @@ def test(X_test, model, test_labels, classes):
 
 def main():
     """TODO"""
-    num_data = 10000
+    num_data = 1000
     epochs = 1000
     max_digit = int(np.ceil(np.log(num_data) / np.log(2)))
     X_train, X_test, y_train, y_test, classes = get_data(num_data)

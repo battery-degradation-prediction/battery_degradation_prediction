@@ -191,6 +191,25 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
     return df_discharge
 
 
+def capacity_during_discharge(df_discharge):
+    """TODO"""
+    capcity_during_discharge_list = []
+    for i in range(len(df_discharge)):
+        capcity_during_discharge_list.append(abs(df_discharge['elapsed_time_per_cycle'][i] * df_discharge['current_measured'][i]))
+    df_discharge["capcity_during_discharge"] = capcity_during_discharge_list
+    return 
+
+def plot_remove_jump_voltage(df_discharge):
+    _, ax = plt.subplots(1, 2, figsize=(18, 5))
+    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0])
+    remove_jump_voltage(df_discharge)
+    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[1])
+    ax[0].set_title("Raw voltage data")
+    ax[1].set_title("Remove jump voltage")
+    plt.show()
+    return
+
+
 def main():
     """Main function"""
     path = "../../data/B0005.csv"
@@ -202,18 +221,13 @@ def main():
     df_discharge = isolate_discharge_cyc_data(df)
     time_elasped_list = add_elapsed_time_per_cycle(df_discharge)
     df_discharge.insert(len(df_discharge.columns), "elapsed_time_per_cycle", time_elasped_list)
-    # remove_outlier(df, "current_measured")
+    capacity_during_discharge(df_discharge)
     df_discharge.reset_index(drop=True, inplace=True)
 
-    _, ax = plt.subplots(1, 2, figsize=(18, 5))
-    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0])
-    remove_jump_voltage(df_discharge)
-    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[1])
-    ax[0].set_title("Raw voltage data")
-    ax[1].set_title("Remove jump voltage")
-    plt.show()
 
     return df
+
+
 
 
 if __name__ == "__main__":

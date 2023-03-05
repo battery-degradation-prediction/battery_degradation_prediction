@@ -224,7 +224,6 @@ def main():
     capacity_during_discharge(df_discharge)
     df_discharge.reset_index(drop=True, inplace=True)
 
-
     return df
 
 

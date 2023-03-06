@@ -70,7 +70,9 @@ def load_data(
     """TODO"""
     df_feature = df_discharge[feature_names]
     dev_x, dev_y, test_x, test_y = dev_test_split(df_feature, test_size)
-    dev_x, dev_y, test_x, test_y, y_scaler = min_max_transform(dev_x, dev_y, test_x, test_y)
+    dev_x, dev_y, test_x, test_y, y_scaler = min_max_transform(
+        dev_x, dev_y, test_x, test_y
+    )
     return dev_x, dev_y, test_x, test_y, y_scaler
 
 

@@ -61,7 +61,7 @@ def min_max_transform(dev_x, dev_y, test_x, test_y):
 
     dev_y = min_max_scaler.fit_transform(dev_y)
     test_y = min_max_scaler.transform(test_y)
-    return dev_x, dev_y, test_x, test_y
+    return dev_x, dev_y, test_x, test_y, min_max_scaler
 
 
 def load_data(
@@ -70,8 +70,8 @@ def load_data(
     """TODO"""
     df_feature = df_discharge[feature_names]
     dev_x, dev_y, test_x, test_y = dev_test_split(df_feature, test_size)
-    dev_x, dev_y, test_x, test_y = min_max_transform(dev_x, dev_y, test_x, test_y)
-    return dev_x, dev_y, test_x, test_y
+    dev_x, dev_y, test_x, test_y, y_scaler = min_max_transform(dev_x, dev_y, test_x, test_y)
+    return dev_x, dev_y, test_x, test_y, y_scaler
 
 
 def main():
@@ -86,7 +86,7 @@ def main():
         "capcity_during_discharge",
     ]
     test_size = 0.1
-    dev_x, dev_y, test_x, test_y = load_data(df_discharge, test_size, feature_names)
+    dev_x, dev_y, test_x, test_y, _ = load_data(df_discharge, test_size, feature_names)
 
 
 if __name__ == "__main__":

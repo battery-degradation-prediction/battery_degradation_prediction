@@ -145,3 +145,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Images
+capacity_parity.png
+data_example.png

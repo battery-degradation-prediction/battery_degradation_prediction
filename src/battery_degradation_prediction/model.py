@@ -45,9 +45,8 @@ class Transformer(nn.Module):
         self.output_size = output_size
 
         # Define the positional encoding layer
-        self.fc1 = nn.Linear(input_size, d_model)
         # self.pos_encoder = PositionalEncoding(d_model, dropout, 100)
-        self.pos_encoder = nn.Sequential(nn.Linear(input_size, d_model), nn.Tanh())
+        self.pos_encoder = nn.Sequential(nn.Linear(input_size[1], d_model), nn.Tanh())
 
         # Define the transformer encoder layer
         encoder_layers = TransformerEncoderLayer(
@@ -59,6 +58,7 @@ class Transformer(nn.Module):
 
         # Define the output layer
         self.fc = nn.Linear(d_model, output_size)
+        self.fc_features = nn.Linear(d_model*input_size[0], input_size[1])
 
     def forward(self, x):
         # x: [batch_size, seq_len, input_size]
@@ -71,11 +71,13 @@ class Transformer(nn.Module):
         x = x.permute(1, 0, 2)  # [seq_len, batch_size, input_size]
         # Pass the input sequence through the transformer encoder layer
         out = self.transformer_encoder(x)  # [seq_len, batch_size, d_model]
-
+        x_out = out.permute(1, 0, 2)
+        x_out = self.fc_features(torch.flatten(x_out, 1)) # [batch_size, input_size]
+        x_out = x_out.view(-1, self.input_size[1])
         # Pass the output of the transformer through the output layer
         out = self.fc(out[-1, :, :])  # [batch_size, output_size]
 
-        return out
+        return out, x_out
 
 
 class PositionalEncoding(nn.Module):

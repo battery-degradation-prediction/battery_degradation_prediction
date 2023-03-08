@@ -32,22 +32,22 @@ def test_windowing_5(data):
     assert windows is None
     assert labels is None
 
-    def test_window_values(self):
-        data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        window_size = 3
-        stride = 1
-        windows, labels = windowing(data, window_size, stride)
-        self.assertTrue(np.array_equal(windows[0], np.array([1, 2, 3])))
-        self.assertTrue(np.array_equal(windows[1], np.array([2, 3, 4])))
-        self.assertTrue(np.array_equal(windows[2], np.array([3, 4, 5])))
-        self.assertTrue(np.array_equal(windows[3], np.array([4, 5, 6])))
-        self.assertTrue(np.array_equal(windows[4], np.array([5, 6, 7])))
-        self.assertTrue(np.array_equal(windows[5], np.array([6, 7, 8])))
-        self.assertTrue(np.array_equal(windows[6], np.array([7, 8, 9])))
-    
-    def test_label_values(self):
-        data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        window_size = 3
-        stride = 1
-        windows, labels = windowing(data, window_size, stride)
-        self.assertTrue(np.array_equal(labels, np.array([4, 5, 6, 7, 8, 9, 10])))
+def test_window_values(self):
+    data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    window_size = 3
+    stride = 1
+    windows, labels = windowing(data, window_size, stride)
+    self.assertTrue(np.array_equal(windows[0], np.array([1, 2, 3])))
+    self.assertTrue(np.array_equal(windows[1], np.array([2, 3, 4])))
+    self.assertTrue(np.array_equal(windows[2], np.array([3, 4, 5])))
+    self.assertTrue(np.array_equal(windows[3], np.array([4, 5, 6])))
+    self.assertTrue(np.array_equal(windows[4], np.array([5, 6, 7])))
+    self.assertTrue(np.array_equal(windows[5], np.array([6, 7, 8])))
+    self.assertTrue(np.array_equal(windows[6], np.array([7, 8, 9])))
+
+def test_label_values(self):
+    data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    window_size = 3
+    stride = 1
+    windows, labels = windowing(data, window_size, stride)
+    self.assertTrue(np.array_equal(labels, np.array([4, 5, 6, 7, 8, 9, 10])))

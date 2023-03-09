@@ -85,7 +85,6 @@ def dev_test_split_3(df_discharge: pd.DataFrame, test_size: float):
     cycle_data = np.zeros((len(df_discharge.groupby("cycle")), num_data_per_group, len(df_discharge.iloc[0])))
     for idx, group in enumerate(df_discharge.groupby("cycle")):
         cycle_data[idx] = group[1].iloc[:num_data_per_group]
-    print(cycle_data.shape)
     windows, x_labels, y_labels = windowing_numpy(cycle_data, 5, 1)
     windows = np.reshape(windows, (windows.shape[0], windows.shape[1], -1))
     dev_x_data, dev_x_labels, dev_y_labels = (windows[:num_train], x_labels[:num_train], y_labels[:num_train, np.newaxis])
@@ -124,6 +123,23 @@ def standard_transform_x(dev_x, dev_x_labels,
 
     return (dev_x, dev_x_labels), (test_x, test_x_labels), standard_scaler_X
 
+def standard_transform_x_label(dev_x_labels,
+                               test_x_labels):
+    """TODO"""
+    standard_scaler_x_label = sklearn.preprocessing.StandardScaler()
+    init_dev_shape = dev_x_labels.shape
+    init_test_shape = test_x_labels.shape
+    num_dev_data = init_dev_shape[0]
+    num_test_data = init_test_shape[0]
+
+    dev_x_labels = standard_scaler_x_label.fit_transform(np.reshape(dev_x_labels, (num_dev_data, -1)))
+    dev_x_labels = np.reshape(dev_x_labels, init_dev_shape)
+
+    test_x_labels = standard_scaler_x_label.transform(np.reshape(test_x_labels, (num_test_data, -1)))
+    test_x_labels = np.reshape(test_x_labels, init_test_shape)
+
+    return dev_x_labels, test_x_labels, standard_scaler_x_label
+
 
 def load_data(
     df_discharge: pd.DataFrame, test_size: float, feature_names: list[str]
@@ -136,6 +152,14 @@ def load_data(
 
     return (dev_x_data, dev_x_labels, dev_y_labels), (test_x_data, test_x_labels, test_y_labels), X_scaler, y_scaler
 
+def load_data_reduction(
+    df_discharge: pd.DataFrame, test_size: float, feature_names: list[str]
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """TODO"""
+    df_feature = df_discharge[feature_names]
+    (dev_x_data, dev_x_labels, dev_y_labels), (test_x_data, test_x_labels, test_y_labels) = dev_test_split_3(df_feature, test_size)
+    reduction_dev_x_labels, reduction_test_x_labels, X_scaler = standard_transform_x_label(dev_x_labels, test_x_labels)
+    return reduction_dev_x_labels, reduction_test_x_labels, X_scaler
 
 def main():
     """TODO"""
@@ -151,6 +175,9 @@ def main():
     ]
     test_size = 0.3
     (dev_x, dev_x_labels, dev_y), (test_x, test_x_labels, test_y), X_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
+    reduction_dev_x_labels, reduction_test_x_labels = load_data_reduction(df_discharge, test_size, feature_names)
+    print("===== reduction_dev, reduction_test =====")
+    print(reduction_dev_x_labels.shape, reduction_test_x_labels.shape)    
     print("===== dev_x, dev_x_labels, dev_y =====")
     print(dev_x.shape, dev_x_labels.shape, dev_y.shape)
     print("===== test_x, test_x_labels, test_y =====")

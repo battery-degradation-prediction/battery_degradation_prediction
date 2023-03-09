@@ -76,6 +76,7 @@ def main():
     test_x = torch.from_numpy(test_x).type(torch.float32).to(device)
     test_y = torch.from_numpy(test_y).type(torch.float32).to(device)
     test_x_labels = torch.from_numpy(test_x_labels).type(torch.float32).to(device)
+
     # Set hyperparameters
     epochs = 201
     input_shape = dev_x.shape[1:]

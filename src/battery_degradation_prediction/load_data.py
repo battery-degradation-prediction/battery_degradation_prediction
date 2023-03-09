@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import sklearn.preprocessing
 import sklearn.model_selection
-from battery_degradation_prediction.preprocessing import get_clean_data
-from battery_degradation_prediction.window import windowing
+from preprocessing import get_clean_data
+from window import windowing
 
 
 def dev_test_split(df_discharge: pd.DataFrame, test_size: float):
@@ -46,22 +46,57 @@ def dev_test_split(df_discharge: pd.DataFrame, test_size: float):
         test_y_data[..., np.newaxis],
     )
 
+def dev_test_split_2(df_discharge: pd.DataFrame, test_size: float):
+    """TODO"""
+    dev_x_data = []
+    test_x_data = []
+    dev_y_data = []
+    test_y_data = []
+    num_train = int(len(df_discharge.groupby("cycle")) * (1-test_size))
+    current_num_train = 0
+    for idx, group in enumerate(df_discharge.groupby("cycle")):
+        cycle_data = group[1].iloc[:, 1:]
+        if idx <= num_train:
+            cycle_data_windows, capacities = windowing(cycle_data, 5, 1)
+            for (dev_x, dev_y) in zip(cycle_data_windows, capacities):
+                dev_x_data.append(dev_x[:,:-1])
+                dev_y_data.append(dev_y)
+            current_num_train += len(cycle_data)
+        else:
+            cycle_data = group[1].iloc[:, 1:]
+            cycle_data_windows, capacities = windowing(cycle_data, 5, 1)
+            for (test_x, test_y) in zip(cycle_data_windows, capacities):
+                test_x_data.append(test_x[:,:-1])
+                test_y_data.append(test_y)
+        
+    dev_x_data, dev_y_data= (np.asarray(dev_x_data), np.asarray(dev_y_data))
+    test_x_data, test_y_data= (np.asarray(test_x_data), np.asarray(test_y_data))
+    return (
+        dev_x_data,
+        dev_y_data[..., np.newaxis],
+        test_x_data,
+        test_y_data[..., np.newaxis],
+    )
+
 
 def min_max_transform(dev_x, dev_y, test_x, test_y):
     """TODO"""
-    min_max_scaler = sklearn.preprocessing.MinMaxScaler()
+    #min_max_scaler_X = sklearn.preprocessing.MinMaxScaler()
+    #min_max_scaler_y = sklearn.preprocessing.MinMaxScaler()
+    min_max_scaler_X = sklearn.preprocessing.StandardScaler()
+    min_max_scaler_y = sklearn.preprocessing.StandardScaler()
     init_dev_shape = dev_x.shape
     init_test_shape = test_x.shape
     num_dev_data = init_dev_shape[0]
     num_test_data = init_test_shape[0]
-    dev_x = min_max_scaler.fit_transform(np.reshape(dev_x, (num_dev_data, -1)))
+    dev_x = min_max_scaler_X.fit_transform(np.reshape(dev_x, (num_dev_data, -1)))
     dev_x = np.reshape(dev_x, init_dev_shape)
-    test_x = min_max_scaler.transform(np.reshape(test_x, (num_test_data, -1)))
+    test_x = min_max_scaler_X.transform(np.reshape(test_x, (num_test_data, -1)))
     test_x = np.reshape(test_x, init_test_shape)
 
-    dev_y = min_max_scaler.fit_transform(dev_y)
-    test_y = min_max_scaler.transform(test_y)
-    return dev_x, dev_y, test_x, test_y, min_max_scaler
+    dev_y = min_max_scaler_y.fit_transform(dev_y)
+    test_y = min_max_scaler_y.transform(test_y)
+    return dev_x, dev_y, test_x, test_y, min_max_scaler_X, min_max_scaler_y
 
 
 def load_data(
@@ -69,11 +104,11 @@ def load_data(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """TODO"""
     df_feature = df_discharge[feature_names]
-    dev_x, dev_y, test_x, test_y = dev_test_split(df_feature, test_size)
-    dev_x, dev_y, test_x, test_y, y_scaler = min_max_transform(
+    dev_x, dev_y, test_x, test_y = dev_test_split_2(df_feature, test_size)
+    dev_x, dev_y, test_x, test_y, X_scaler, y_scaler = min_max_transform(
         dev_x, dev_y, test_x, test_y
     )
-    return dev_x, dev_y, test_x, test_y, y_scaler
+    return dev_x, dev_y, test_x, test_y, X_scaler, y_scaler
 
 
 def main():
@@ -87,9 +122,9 @@ def main():
         "temperatrue_measured",
         "capcity_during_discharge",
     ]
-    test_size = 0.1
+    test_size = 0.2
     dev_x, dev_y, test_x, test_y, _ = load_data(df_discharge, test_size, feature_names)
-
+    print(dev_x.shape, dev_y.shape, test_x.shape, test_y.shape)
 
 if __name__ == "__main__":
     main()

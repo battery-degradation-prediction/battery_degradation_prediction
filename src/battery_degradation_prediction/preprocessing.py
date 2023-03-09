@@ -330,13 +330,13 @@ def plot_remove_jump_voltage(df_discharge):
     return
 
 
-def get_clean_data(path: str) -> pd.DataFrame:
+def get_clean_data(path: str, data_num: int=10000) -> pd.DataFrame:
     """
     Convert the csv file from path into clean data
     """
 
     df = pd.read_csv(path)
-    df = df.iloc[:10500]
+    df = df.iloc[:data_num]
 
     df["time"] = df["datetime"].apply(convert_datetime_str_to_obj)
     df["elapsed_time"] = df["time"].apply(

@@ -11,6 +11,6 @@ def evaluate(
         for _ in range(eval_data.size(0)):
             # data, targets = get_batch(eval_data, i)
             # seq_len = data.size(0)
-            output = model(eval_data)
+            output, _ = model(eval_data)
             total_loss = criterion(output, targets).item()
     return total_loss

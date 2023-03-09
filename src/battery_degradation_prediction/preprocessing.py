@@ -21,7 +21,8 @@ def convert_datetime_str_to_obj(date_time_str: str) -> datetime:
     time_object : datetime
         A datetime object containing year, month, day, hour, minute, and second.
     """
-
+    if not datetime.datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S"):
+        raise ValueError()
     time_object = datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S")
     return time_object
 
@@ -127,6 +128,7 @@ def remove_nan_from_data(dataframe: pd.DataFrame) -> pd.DataFrame:
         The dataframe with no NaNs in columns
     """
     dataframe.dropna(subset=list(dataframe.columns.values))
+
     return dataframe
 
 
@@ -149,6 +151,11 @@ def calc_test_time_from_datetime(target_time: datetime, start_time: datetime) ->
 
     second_to_hour = 1.0 / 3600.0
     time_elapsed = (target_time - start_time).seconds * second_to_hour
+    if any([(time_elapsed < 0.0)]):
+        raise ValueError("Cannot have neagtive time. Ensure the first row in time is the global start time of experiment.")
+    else:
+        pass
+
     return time_elapsed
 
 
@@ -166,6 +173,18 @@ def isolate_discharge_cyc_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe : pd.DataFrame
         The dataframe containing only the discharging data
     """
+    # Checks if "type" column exists in the dataframe
+    if "type" not in dataframe.columns:
+        raise ValueError("Input dataframe does not have a column named 'type'")
+    
+    # Checks if "type" column contains only strings
+    if not all(isinstance(val, str) for val in dataframe["type"].values):
+        raise ValueError("Values in 'type' column must be of type string")
+    
+    # Check if the input dataframe is empty
+    if dataframe.empty:
+        raise ValueError("Input dataframe is empty")
+    
     df_discharge = dataframe[dataframe["type"] == "discharging"].copy()
 
     return df_discharge
@@ -183,17 +202,36 @@ def add_elapsed_time_per_cycle(df: pd.DataFrame) -> list[float]:
     -------
     time_elasped_list : list[float]
     """
-    time_elasped_list = []
-    for time in df.groupby("cycle")["time"]:
-        start_time = time[1].iloc[0]
-        for target_time in time[1]:
-            time_elasped = calc_test_time_from_datetime(target_time, start_time)
-            time_elasped_list.append(time_elasped)
-    return time_elasped_list
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input is not a pandas DataFrame")
+    if not all(col in df.columns for col in ['cycle', 'time']):
+        raise ValueError("Input DataFrame does not contain 'cycle' and 'time' columns")    
+    if df.empty:
+        raise ValueError("Input DataFrame is empty")
+
+    time_elapsed_list = []
+    for cycle, time_group in df.groupby("cycle")["time"]:
+        if len(time_group) == 0:
+            raise ValueError(f"Cycle {cycle} has no time entries")
+
+        start_time = time_group.iloc[0]
+        for target_time in time_group:
+            time_elapsed = calc_test_time_from_datetime(target_time, start_time)
+            if not isinstance(time_elapsed, float):
+                raise TypeError(f"Elapsed time in cycle {cycle} should be a float")
+            time_elapsed_list.append(time_elapsed)
+
+    if not time_elapsed_list:
+        raise ValueError("Returned list is empty")
+    if len(time_elapsed_list) != len(df):
+        raise ValueError("Returned list should have the same length as the len of the input dataframe")
+    
+    return time_elapsed_list
 
 
-def remove_jump_voltage(df_discharge: pd.DataFrame):
-    """Remove the rows that jump back from minima inplacely.
+def remove_jump_voltage(df_discharge: pd.DataFrame) -> pd.DataFrame:
+    """Removes the rows within a cycle that have increasing voltage 
+    after the minima discharge voltage (i.e, end of discharge)
 
     Parameters
     ----------
@@ -203,23 +241,30 @@ def remove_jump_voltage(df_discharge: pd.DataFrame):
     Returns
     -------
     df_discharge : pd.DataFrame
-        The dataframe containing only the discharge cycles without jump back rows
+        The dataframe containing only the discharge cycles that end at
+        the minima volatge per cycle
     """
     cummulative_num = 0
     drop_ranges = []
     for voltage_group in df_discharge.groupby("cycle")["voltage_measured"]:
         min_voltage_index = np.argmin(voltage_group[1])
         num_group = voltage_group[1].shape[0]
+        if num_group <= 1:
+            raise ValueError(f"Cycle {voltage_group[0]} contains only one voltage measurement. Provide entire cycle's voltage")
+        if min_voltage_index == 0:
+            raise ValueError(f"Discharge cycle {voltage_group[0]} starts with a voltage minimum")
         drop_ranges.append(
             range(cummulative_num + min_voltage_index + 1, cummulative_num + num_group)
         )
         cummulative_num += num_group
-    drop_list = [r for ranges in drop_ranges for r in ranges]
+    
+    drop_list = [r for ranges in drop_ranges for r in ranges]  
     df_discharge.drop(df_discharge.index[drop_list], inplace=True)
+
     return df_discharge
 
 
-def calc_capacity_during_discharge(df_discharge: pd.DataFrame):
+def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
     """Calculates discharge capacity during each cycle using the
     elapsed_time_per_cycle and current_measured within the dataframe.
 
@@ -231,8 +276,14 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame):
     Returns
     -------
     capcity_during_discharge_list : list[float]
-        A list containing the discharge capacity for all cycles.
+        A list containing the discharge capacity at every timepoint for 
+        all discharge cycles in the dataframe.
     """
+    if df_discharge.empty:
+        raise ValueError("Input dataframe is empty")
+    if not all(col in df_discharge.columns for col in ['elapsed_time_per_cycle', 'current_measured']):
+        raise ValueError("Input dataframe does not contain 'elapsed_time_per_cycle' and 'current_measured' columns")
+
     capcity_during_discharge_list = []
     for i in range(len(df_discharge)):
         capcity_during_discharge_list.append(
@@ -240,7 +291,13 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame):
                 df_discharge["elapsed_time_per_cycle"][i]
                 * df_discharge["current_measured"][i]
             )
-        )
+        )   
+    if not capcity_during_discharge_list:
+        raise ValueError("Returned capacity during discharge list is empty")
+    if not all(isinstance(d_cap, float) for d_cap in capcity_during_discharge_list):
+        raise TypeError("Returned list should only contain floats")
+    if len(capcity_during_discharge_list) != len(df_discharge):
+        raise ValueError("Returned list should have the same length as the len of the input dataframe")
     return capcity_during_discharge_list
 
 

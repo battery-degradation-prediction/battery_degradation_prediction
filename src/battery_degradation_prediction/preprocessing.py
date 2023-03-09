@@ -21,7 +21,7 @@ def convert_datetime_str_to_obj(date_time_str: str) -> datetime:
     time_object : datetime
         A datetime object containing year, month, day, hour, minute, and second.
     """
-    if not datetime.datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S"):
+    if not datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S"):
         raise ValueError()
     time_object = datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S")
     return time_object

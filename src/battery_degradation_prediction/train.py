@@ -6,16 +6,16 @@ import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
-from battery_degradation_prediction.preprocessing import get_clean_data
-from battery_degradation_prediction.load_data import load_data
-from battery_degradation_prediction.model import Net, Transformer
-from battery_degradation_prediction.evaluate import evaluate
-from battery_degradation_prediction.window import windowing
-#from preprocessing import get_clean_data
-#from load_data import load_data
-#from model import Net, Transformer
-#from evaluate import evaluate
-#from window import windowing
+#from battery_degradation_prediction.preprocessing import get_clean_data
+#from battery_degradation_prediction.load_data import load_data
+#from battery_degradation_prediction.model import Net, Transformer
+#from battery_degradation_prediction.evaluate import evaluate
+#from battery_degradation_prediction.window import windowing
+from preprocessing import get_clean_data
+from load_data import load_data
+from model import Net, Transformer
+from evaluate import evaluate
+from window import windowing
 
 
 def train(dev_x, dev_x_labels, dev_y, model, epochs, optimizer, criterion):
@@ -25,7 +25,7 @@ def train(dev_x, dev_x_labels, dev_y, model, epochs, optimizer, criterion):
         outputs, x_outputs = model(dev_x)
         loss_y = criterion(outputs, dev_y)
         loss_x = criterion(x_outputs, dev_x_labels)
-        loss = loss_y + loss_x
+        loss = loss_y #+ loss_x
         loss.backward()
         optimizer.step()  # Does the update
         if epoch % 10 == 0:
@@ -55,6 +55,7 @@ def parity_plot(test_y, predictions):
 def main():
     """TODO"""
     path = "../../data/B0005.csv"
+    path = "~/B0005.csv"
     df_discharge = get_clean_data(path, int(5e6))
     feature_names = [
         "cycle",
@@ -64,7 +65,7 @@ def main():
         "capcity_during_discharge",
         "capacity"
     ]
-    test_size = 0.3
+    test_size = 0.2
     (dev_x, dev_x_labels, dev_y), (test_x, test_x_labels, test_y), X_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
 
     #device = torch.device("cpu")
@@ -76,8 +77,9 @@ def main():
     test_x = torch.from_numpy(test_x).type(torch.float32).to(device)
     test_y = torch.from_numpy(test_y).type(torch.float32).to(device)
     test_x_labels = torch.from_numpy(test_x_labels).type(torch.float32).to(device)
+    print(f"dev_shape = {dev_x.shape}, test_y_shape = {test_y.shape}")
     # Set hyperparameters
-    epochs = 201
+    epochs = 51
     input_shape = dev_x.shape[1:]
     d_model = 8
     nhead = 2
@@ -96,7 +98,7 @@ def main():
     print('evaluate')
     
     test_loss = evaluate(model, test_x, test_y, criterion)
-    pred, x_outputs = model(test_x)
+    pred, x_outputs = model(test_x[:1])
     #pred, x_outputs = model(dev_x)
     pred = pred.cpu().detach().numpy()[:, 0]
     test_y = test_y.cpu().detach().numpy()[:, 0]
@@ -105,7 +107,7 @@ def main():
     pred_inv = y_scaler.inverse_transform(pred.reshape(1, -1)).reshape(
         -1,
     )
-    test_inv = y_scaler.inverse_transform(test_y.reshape(1, -1)).reshape(
+    test_inv = y_scaler.inverse_transform(test_y[:1].reshape(1, -1)).reshape(
         -1,
     )
     

@@ -44,7 +44,6 @@ def train(train_x, train_y, val_x, val_y, model, batch_size, epochs, optimizer, 
             optimizer.zero_grad()  # zero the gradient buffers
             x_outputs, _ = model(data)
             loss = criterion(x_outputs, targets)
-            #loss, _, (_, _) = model(dev_x_labels)
             loss_sum += loss
             loss.backward()
             optimizer.step()  # Does the update
@@ -106,7 +105,7 @@ def main():
     ]
     test_size = 0.2
     #dev_x_labels, test_x_labels, X_scaler = load_data_reduction(df_discharge, test_size, feature_names)
-    (dev_x, dev_x_labels, _), (test_x, _, _), X_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
+    (dev_x, dev_x_labels, _), (test_x, _, _), X_scaler, x_label_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
     print(dev_x.shape, test_x.shape)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -116,6 +115,7 @@ def main():
 
     dev_y = dev_x[:, 1:]
     init_shape = dev_y.shape
+    print(init_shape)
     dev_inv = torch.cat((torch.zeros(dev_y.size()[0], 1, dev_y.size()[-1]).to(device), dev_y), dim=1)
     print(dev_y.shape, dev_inv.shape)
     dev_inv = dev_inv.cpu().detach().numpy()
@@ -157,12 +157,6 @@ def main():
 
     # Define model
     model = TransformerReduction(input_shape, d_model, nhead, num_layers, output_size, latent_size, dropout).to(device)
-    vae = 0
-    if vae:
-        input_size = dev_x_labels.shape[2]
-        hidden_size = 64
-        model = LSTMVAE(input_size, hidden_size, latent_size, device).to(device)
-
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters())
 

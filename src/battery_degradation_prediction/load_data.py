@@ -112,20 +112,14 @@ def standard_transform_x(dev_x, dev_x_labels,
     num_dev_data = init_dev_shape[0]
     num_test_data = init_test_shape[0]
     print("dev_init = ", init_dev_shape)
-    #dev_x = standard_scaler_X.fit(np.reshape(dev_x, (-1, init_dev_shape[-1])))
-    dev_x = standard_scaler_X.fit_transform(np.reshape(dev_x, (num_dev_data, -1)))
-    print("dev = ", np.reshape(dev_x, (num_dev_data, -1)).shape)
-    dev_x = np.reshape(dev_x, init_dev_shape)
-    dev_x_labels = standard_scaler_x_label.fit_transform(np.reshape(dev_x_labels, (num_dev_data, -1)))
-    print("dev_label = ", np.reshape(dev_x_labels, (num_dev_data, -1)).shape)
-    dev_x_labels = np.reshape(dev_x_labels, (num_dev_data, init_dev_shape[2]))
-
-    test_x = standard_scaler_X.transform(np.reshape(test_x, (num_test_data, -1)))
-    test_x = np.reshape(test_x, init_test_shape)
-    test_x_labels = standard_scaler_x_label.transform(np.reshape(test_x_labels, (num_test_data, -1)))
-    test_x_labels = np.reshape(test_x_labels, (num_test_data, init_test_shape[2]))
-
-    return (dev_x, dev_x_labels), (test_x, test_x_labels), standard_scaler_X
+    fit_data = np.concatenate((dev_x[0], dev_x[1:, -1]))
+    standard_scaler_X.fit(np.reshape(fit_data, (-1, init_dev_shape[-1])))
+    dev_x = standard_scaler_X.transform(np.reshape(dev_x, (-1, init_dev_shape[-1])))
+    dev_x = np.reshape(dev_x, (init_dev_shape[0], init_dev_shape[1], -1))
+    test_x = standard_scaler_X.transform(np.reshape(test_x, (-1, init_dev_shape[-1])))
+    test_x = np.reshape(test_x, (init_test_shape[0], init_test_shape[1], -1))
+    dev_x_labels, test_x_labels, standard_scaler_x_label = standard_transform_x_label(dev_x_labels, test_x_labels)
+    return (dev_x, dev_x_labels), (test_x, test_x_labels), standard_scaler_X, standard_scaler_x_label
 
 def standard_transform_x_label(dev_x_labels,
                                test_x_labels):
@@ -151,9 +145,9 @@ def load_data(
     """TODO"""
     df_feature = df_discharge[feature_names]
     (dev_x_data, dev_x_labels, dev_y_labels), (test_x_data, test_x_labels, test_y_labels) = dev_test_split_3(df_feature, test_size)
-    (dev_x_data, dev_x_labels), (test_x_data, test_x_labels), X_scaler = standard_transform_x(dev_x_data, dev_x_labels, test_x_data, test_x_labels)
+    (dev_x_data, dev_x_labels), (test_x_data, test_x_labels), X_scaler, x_label_scaler = standard_transform_x(dev_x_data, dev_x_labels, test_x_data, test_x_labels)
     dev_y_labels, test_y_labels, y_scaler = standard_transform_y(dev_y_labels, test_y_labels)
-    return (dev_x_data, dev_x_labels, dev_y_labels), (test_x_data, test_x_labels, test_y_labels), X_scaler, y_scaler
+    return (dev_x_data, dev_x_labels, dev_y_labels), (test_x_data, test_x_labels, test_y_labels), X_scaler, x_label_scaler, y_scaler
 
 def load_data_reduction(
     df_discharge: pd.DataFrame, test_size: float, feature_names: list[str]
@@ -177,7 +171,7 @@ def main():
         "capacity"
     ]
     test_size = 0.3
-    (dev_x, dev_x_labels, dev_y), (test_x, test_x_labels, test_y), X_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
+    (dev_x, dev_x_labels, dev_y), (test_x, test_x_labels, test_y), X_scaler, x_label_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
     reduction_dev_x_labels, reduction_test_x_labels, _ = load_data_reduction(df_discharge, test_size, feature_names)
     print("===== reduction_dev, reduction_test =====")
     print(reduction_dev_x_labels.shape, reduction_test_x_labels.shape)    

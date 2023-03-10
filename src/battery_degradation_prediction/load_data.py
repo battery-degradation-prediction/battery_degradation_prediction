@@ -163,7 +163,7 @@ def load_data_reduction(
 
 def main():
     """TODO"""
-    path = "../../data/B0005.csv"
+    path = "~/B0005.csv"
     df_discharge = get_clean_data(path, int(5e4))
     feature_names = [
         "cycle",

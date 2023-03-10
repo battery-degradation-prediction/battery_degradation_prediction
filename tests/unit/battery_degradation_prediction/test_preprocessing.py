@@ -32,3 +32,41 @@ class UnitTests(unittest.TestCase):
             np.testing.assert_array_equal(true, predictions)
         except:
             raise
+
+
+class TestConvertDatetimeStrToObj(unittest.TestCase):
+    """
+    This class manages the tests for the function that converts 
+    datetime strings to objects.
+    """
+    def test_smoke(self):
+        """
+        Simple smoke test to make sure function runs.
+        """
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2], 
+            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58', 
+                         '2008-04-02-15-26-17','2008-04-02-15-26-35', 
+                         '2008-04-02-15-26-53']})
+
+        test_df["time"] = test_df["datetime"].apply(convert_datetime_str_to_obj)
+
+    def test_input_dates_not_formatted_correctly(self):
+        """
+        Edge test to make sure the function throws a ValueError
+        when the input probabilities do not sum to one.
+        """
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2], 
+            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58', 
+                         '2008-04-02-15-26-17','2008-04-02-15-26-35', 
+                         '2008-04-02-15-26-53']})
+        
+        with self.assertRaises(ValueError):
+            entropy([.9, .9])
+
+    def test_args_out_of_range(self):
+        """
+        Edge tst to make sure the function throws a ValueError
+        when the input probabilities are < 0 or > 1.
+        """
+        with self.assertRaises(ValueError):
+            entropy([-1, 2])

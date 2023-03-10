@@ -6,17 +6,18 @@ import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
-from battery_degradation_prediction.preprocessing import get_clean_data
-from battery_degradation_prediction.load_data import load_data, load_data_reduction
-from battery_degradation_prediction.model import Net, Transformer, TransformerReduction
+#from battery_degradation_prediction.preprocessing import get_clean_data
+#from battery_degradation_prediction.load_data import load_data, load_data_reduction
+#from battery_degradation_prediction.model import Net, Transformer, TransformerReduction
 #from battery_degradation_prediction.evaluate import evaluate
-from battery_degradation_prediction.window import windowing
-from battery_degradation_prediction.lstm_vae import LSTMVAE
-#from preprocessing import get_clean_data
-#from load_data import load_data
-#from model import Net, Transformer
-#from evaluate import evaluate
-#from window import windowing
+#from battery_degradation_prediction.window import windowing
+#from battery_degradation_prediction.lstm_vae import LSTMVAE
+from preprocessing import get_clean_data
+from load_data import load_data, load_data_reduction
+from model import Net, Transformer
+from evaluate import evaluate
+from window import windowing
+from lstm_vae import LSTMVAE
 
 
 def train(dev_x_labels, model, epochs, optimizer, criterion):
@@ -67,7 +68,7 @@ def evaluate(
 
 def main():
     """TODO"""
-    path = "../../data/B0005.csv"
+    path = "~/B0005.csv"
     df_discharge = get_clean_data(path, int(5e6))
     feature_names = [
         "cycle",
@@ -87,7 +88,7 @@ def main():
     test_x_labels = torch.from_numpy(test_x_labels).type(torch.float32).to(device)
 
     # Set hyperparameters
-    epochs = 51
+    epochs = 251
     input_shape = dev_x_labels.shape[1:]
     print("input shape = ", input_shape)
     d_model = 8

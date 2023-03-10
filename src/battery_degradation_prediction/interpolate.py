@@ -1,3 +1,4 @@
+from scipy.interpolate import CubicSpline
 # features_list = ['temperature_measured', 'voltage_measured', 'current_measured', 'capacity']
 def spine_interpolate(dataframe, features_list) -> pd.DataFrame:
     """

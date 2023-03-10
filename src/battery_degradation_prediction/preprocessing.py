@@ -181,10 +181,6 @@ def isolate_discharge_cyc_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     if not all(isinstance(val, str) for val in dataframe["type"].values):
         raise ValueError("Values in 'type' column must be of type string")
     
-    # Check if the input dataframe is empty
-    if dataframe.empty:
-        raise ValueError("Input dataframe is empty")
-    
     df_discharge = dataframe[dataframe["type"] == "discharging"].copy()
 
     return df_discharge
@@ -202,30 +198,16 @@ def add_elapsed_time_per_cycle(df: pd.DataFrame) -> list[float]:
     -------
     time_elasped_list : list[float]
     """
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input is not a pandas DataFrame")
     if not all(col in df.columns for col in ['cycle', 'time']):
         raise ValueError("Input DataFrame does not contain 'cycle' and 'time' columns")    
-    if df.empty:
-        raise ValueError("Input DataFrame is empty")
 
     time_elapsed_list = []
     for cycle, time_group in df.groupby("cycle")["time"]:
-        if len(time_group) == 0:
-            raise ValueError(f"Cycle {cycle} has no time entries")
-
         start_time = time_group.iloc[0]
         for target_time in time_group:
             time_elapsed = calc_test_time_from_datetime(target_time, start_time)
-            if not isinstance(time_elapsed, float):
-                raise TypeError(f"Elapsed time in cycle {cycle} should be a float")
             time_elapsed_list.append(time_elapsed)
 
-    if not time_elapsed_list:
-        raise ValueError("Returned list is empty")
-    if len(time_elapsed_list) != len(df):
-        raise ValueError("Returned list should have the same length as the len of the input dataframe")
-    
     return time_elapsed_list
 
 
@@ -246,6 +228,7 @@ def remove_jump_voltage(df_discharge: pd.DataFrame) -> pd.DataFrame:
     """
     cummulative_num = 0
     drop_ranges = []
+    
     for voltage_group in df_discharge.groupby("cycle")["voltage_measured"]:
         min_voltage_index = np.argmin(voltage_group[1])
         num_group = voltage_group[1].shape[0]
@@ -279,8 +262,6 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
         A list containing the discharge capacity at every timepoint for 
         all discharge cycles in the dataframe.
     """
-    if df_discharge.empty:
-        raise ValueError("Input dataframe is empty")
     if not all(col in df_discharge.columns for col in ['elapsed_time_per_cycle', 'current_measured']):
         raise ValueError("Input dataframe does not contain 'elapsed_time_per_cycle' and 'current_measured' columns")
 
@@ -292,12 +273,6 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
                 * df_discharge["current_measured"][i]
             )
         )   
-    if not capcity_during_discharge_list:
-        raise ValueError("Returned capacity during discharge list is empty")
-    if not all(isinstance(d_cap, float) for d_cap in capcity_during_discharge_list):
-        raise TypeError("Returned list should only contain floats")
-    if len(capcity_during_discharge_list) != len(df_discharge):
-        raise ValueError("Returned list should have the same length as the len of the input dataframe")
     return capcity_during_discharge_list
 
 
@@ -330,13 +305,14 @@ def plot_remove_jump_voltage(df_discharge):
     return
 
 
-def get_clean_data(path: str, data_num: int=10000) -> pd.DataFrame:
+def get_clean_data(path: str) -> pd.DataFrame:
     """
     Convert the csv file from path into clean data
     """
 
     df = pd.read_csv(path)
-    df = df.iloc[:data_num]
+    if df.empty:
+        raise ValueError("Input dataframe is empty")
 
     df["time"] = df["datetime"].apply(convert_datetime_str_to_obj)
     df["elapsed_time"] = df["time"].apply(

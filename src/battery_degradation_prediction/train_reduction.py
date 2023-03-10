@@ -6,34 +6,60 @@ import torch
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
-#from battery_degradation_prediction.preprocessing import get_clean_data
-#from battery_degradation_prediction.load_data import load_data, load_data_reduction
-#from battery_degradation_prediction.model import Net, Transformer, TransformerReduction
+from battery_degradation_prediction.preprocessing import get_clean_data
+from battery_degradation_prediction.load_data import load_data, load_data_reduction
+from battery_degradation_prediction.model import Net, Transformer, TransformerReduction
 #from battery_degradation_prediction.evaluate import evaluate
-#from battery_degradation_prediction.window import windowing
-#from battery_degradation_prediction.lstm_vae import LSTMVAE
-from preprocessing import get_clean_data
-from load_data import load_data, load_data_reduction
-from model import Net, Transformer
-from evaluate import evaluate
-from window import windowing
-from lstm_vae import LSTMVAE
+from battery_degradation_prediction.window import windowing
+from battery_degradation_prediction.lstm_vae import LSTMVAE
+
+from sklearn.utils import shuffle
+from sklearn.model_selection import KFold
+
+#from preprocessing import get_clean_data
+#from load_data import load_data, load_data_reduction
+#from model import Net, Transformer
+#from evaluate import evaluate
+#from window import windowing
+#from lstm_vae import LSTMVAE
 
 
-def train(dev_x_labels, model, epochs, optimizer, criterion):
+def get_batch(X, y, batch_size, batch_num):
     """TODO"""
-    for epoch in range(epochs):
-        #for dev_x_label in dev_x_labels:
-        optimizer.zero_grad()  # zero the gradient buffers
-        #x_outputs, _ = model(dev_x_labels)
-        #loss_x = criterion(x_outputs, dev_x_labels)
-        #loss = loss_x
-        loss, _, (_, _) = model(dev_x_labels)
-        loss.backward()
-        optimizer.step()  # Does the update
-        if epoch % 10 == 0:
-            print(f"Epoch = {epoch}, loss = {loss:2.5f}")
-    return model
+    X, y = shuffle(X, y)
+    features = X[batch_num*batch_size:(batch_num+1)*batch_size]
+    targets = y[batch_num*batch_size:(batch_num+1)*batch_size]
+    return features, targets
+
+def train(train_x, train_y, val_x, val_y, model, batch_size, epochs, optimizer, criterion):
+    """TODO"""
+    num_batches = len(train_x) // batch_size
+    history = {}
+    model.train()
+    for epoch in range(1, epochs+1):
+        print(f" ===== Epoch: {epoch}/{epochs} =====")
+        loss_sum = 0
+        for batch in range(train_x.size(0)):
+            data, targets = get_batch(train_x, train_y, batch_size, batch)
+            optimizer.zero_grad()  # zero the gradient buffers
+            x_outputs, _ = model(data)
+            loss = criterion(x_outputs, targets)
+            #loss, _, (_, _) = model(dev_x_labels)
+            loss_sum += loss
+            loss.backward()
+            optimizer.step()  # Does the update
+            if batch % 10 == 0:
+                print(f"Batch {batch+1}/{num_batches} | loss = {loss:2.5f}")
+        history.setdefault('train_loss', []).append((loss_sum/num_batches).cpu().detach().numpy())
+    val_loss = val_eval(val_x, val_y, model, criterion)
+    history.setdefault('val_loss', []).append(val_loss.cpu().detach().numpy())
+    return model, history
+
+def val_eval(val_x, val_y, model, criterion):
+    model.eval()
+    x_outputs, _ = model(val_x)
+    val_loss = criterion(x_outputs, val_y)
+    return val_loss
 
 
 def parity_plot(test_y, predictions):
@@ -60,15 +86,15 @@ def evaluate(
 ) -> float:
     model.eval()  # turn on evaluation mode
     with torch.no_grad():
-        output, _, (_, _) = model(eval_data)
-        #total_loss = criterion(output, targets).item()
-    return output
+        output, _ = model(eval_data)
+        loss = criterion(output, targets).item()
+    return loss
 
 
 
 def main():
     """TODO"""
-    path = "~/B0005.csv"
+    path = "../../data/B0005.csv"
     df_discharge = get_clean_data(path, int(5e6))
     feature_names = [
         "cycle",
@@ -78,41 +104,114 @@ def main():
         "capcity_during_discharge",
         "capacity"
     ]
-    test_size = 0.3
-    dev_x_labels, test_x_labels, X_scaler = load_data_reduction(df_discharge, test_size, feature_names)
+    test_size = 0.2
+    #dev_x_labels, test_x_labels, X_scaler = load_data_reduction(df_discharge, test_size, feature_names)
+    (dev_x, dev_x_labels, _), (test_x, _, _), X_scaler, y_scaler = load_data(df_discharge, test_size, feature_names)
+    print(dev_x.shape, test_x.shape)
 
-    #device = torch.device("cpu")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"device = {device}")
-    dev_x_labels = torch.from_numpy(dev_x_labels).type(torch.float32).to(device)
-    test_x_labels = torch.from_numpy(test_x_labels).type(torch.float32).to(device)
+    dev_x = torch.from_numpy(dev_x).type(torch.float32).to(device)
+    test_x = torch.from_numpy(test_x).type(torch.float32).to(device)
+
+    dev_y = dev_x[:, 1:]
+    init_shape = dev_y.shape
+    dev_inv = torch.cat((torch.zeros(dev_y.size()[0], 1, dev_y.size()[-1]).to(device), dev_y), dim=1)
+    print(dev_y.shape, dev_inv.shape)
+    dev_inv = dev_inv.cpu().detach().numpy()
+    dev_inv = X_scaler.inverse_transform(dev_inv.reshape(init_shape[0], -1))
+    print(dev_inv.shape)
+    dev_y_features = np.reshape(dev_inv, (init_shape[0], init_shape[1]+1, 4, -1))
+    dev_y_features = dev_y_features[:, 1:]
+    print(dev_y_features.shape)
+    print(dev_y_features[0, -1,:, :5])
+    capacity_overtime = dev_y_features[:, -1, -1, :]
+    voltage_overtime = dev_y_features[:, -1, 0, :]
+    _, ax = plt.subplots(figsize=(5,5))
+    for cycle_num in range(1):
+        ax.scatter(capacity_overtime[cycle_num],
+                   voltage_overtime[cycle_num],
+                   label=f'cycle {cycle_num} GT')
+    plt.xlabel("capacity")
+    plt.ylabel("voltage")
+    plt.legend()
+    plt.show()
+    asd()
+
+    dev_x = dev_x[:, :-1]
+    test_y = test_x[:, 1:]
+    test_x = test_x[:, :-1]
+    kf = KFold(n_splits=2)
+    kf.get_n_splits(dev_x)
 
     # Set hyperparameters
-    epochs = 251
-    input_shape = dev_x_labels.shape[1:]
-    print("input shape = ", input_shape)
+    epochs = 1
+    input_shape = dev_x.shape[1:]
     d_model = 8
     nhead = 2
     num_layers = 2
     output_size = 1
     dropout = 0.2
     latent_size = 10
-
-    input_size = dev_x_labels.shape[2]
-    hidden_size = 64
-    num_lstm_layer = 1
+    batch_size = 1
 
     # Define model
-    #model = TransformerReduction(input_shape, d_model, nhead, num_layers, output_size, latent_size, dropout).to(device)
-    model = LSTMVAE(input_size, hidden_size, latent_size, device).to(device)
+    model = TransformerReduction(input_shape, d_model, nhead, num_layers, output_size, latent_size, dropout).to(device)
+    vae = 0
+    if vae:
+        input_size = dev_x_labels.shape[2]
+        hidden_size = 64
+        model = LSTMVAE(input_size, hidden_size, latent_size, device).to(device)
 
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters())
+
     # Train
-    model = train(dev_x_labels, model, epochs, optimizer, criterion)
-    # Evaluate    
-    test_loss = evaluate(model, test_x_labels, test_x_labels, criterion)
-    print(f"test loss = {test_loss}")
+    histories = []
+    models = []
+    for fold, (train_index, val_index) in enumerate(kf.split(dev_x)):
+        train_x, val_x = dev_x[train_index], dev_x[val_index]
+        train_y, val_y = dev_y[train_index], dev_y[val_index]
+        print(f"ʕ •ᴥ•ʔ Fold {fold} ʕ •ᴥ•ʔ")
+        model, history = train(train_x, train_y, 
+                               val_x, val_y,
+                               model, batch_size, epochs, optimizer, criterion)
+        models.append(model)
+        histories.append(history)
+    mean_train_loss = np.mean([history['train_loss'] for history in histories], axis=0)
+    mean_val_loss = np.mean([history['val_loss'] for history in histories], axis=0)
+    std_train_loss = np.std([history['train_loss'] for history in histories], axis=0)
+    std_val_loss = np.std([history['val_loss'] for history in histories], axis=0)
+
+    print(f"mean_train_loss = {mean_train_loss[0]:2.5f} ± {std_train_loss[0]:2.3f}")
+    print(f"mean_val_loss = {mean_val_loss[0]:2.5f} ± {std_val_loss[0]:2.3f}")
+    
+    model.eval()
+    x_outputs, _ = model(dev_x)
+    x_outputs = x_outputs.cpu().detach().numpy()
+    dev_y = dev_y.cpu().detach().numpy()
+    x_outputs = np.reshape(x_outputs, (x_outputs.shape[0], x_outputs.shape[1], 4, -1))
+    dev_y_features = np.reshape(dev_y, (dev_y.shape[0], dev_y.shape[1], 4, -1))
+    capacity_overtime = dev_y_features[:, -1, -1, :]
+    voltage_overtime = dev_y_features[:, -1, 0, :]
+    capacity_overtime_pred = x_outputs[:, -1, -1, :]
+    voltage_overtime_pred = x_outputs[:, -1, 0, :]
+    _, ax = plt.subplots(figsize=(5,5))
+    for cycle_num in range(1):
+        ax.scatter(capacity_overtime_pred[cycle_num],
+                   voltage_overtime_pred[cycle_num],
+                   label=f'cycle {cycle_num} Pred', s=6, facecolors="none", edgecolors="k")
+        ax.scatter(capacity_overtime[cycle_num],
+                   voltage_overtime[cycle_num],
+                   label=f'cycle {cycle_num} GT')
+    plt.xlabel("capacity")
+    plt.ylabel("voltage")
+    plt.legend()
+    plt.show()
+    # Evaluate
+    # TODO: remember to train the model with the entire dataset
+    #test_loss = evaluate(model, test_x, test_y, criterion)
+    #print(f"test loss = {test_loss}")
 
 
 if __name__ == "__main__":

@@ -47,7 +47,7 @@ def train(train_x, train_y, val_x, val_y, model, batch_size, epochs, optimizer, 
             loss_sum += loss
             loss.backward()
             optimizer.step()  # Does the update
-            if batch % 1 == 0:
+            if batch % 20 == 0:
                 print(f"Batch {batch+1}/{num_batches} | loss = {loss:2.5f}")
         history.setdefault('train_loss', []).append((loss_sum/num_batches).cpu().detach().numpy())
         val_loss = val_eval(val_x, val_y, model, criterion)
@@ -120,11 +120,9 @@ def main():
     assert not (torch.isnan(dev_x).any() or torch.isnan(dev_y).any()), "Input X contains nan"
     test_y = test_x[:, 1:]
     test_x = test_x[:, :-1]
-    kf = KFold(n_splits=2)
-    kf.get_n_splits(dev_x)
 
     # Set hyperparameters
-    epochs = 10
+    epochs = 200
     input_shape = dev_x.shape[1:]
     d_model = 8
     nhead = 2
@@ -142,6 +140,9 @@ def main():
     # Train
     histories = []
     models = []
+    kf = KFold(n_splits=5)
+    kf.get_n_splits(dev_x)
+
     for fold, (train_index, val_index) in enumerate(kf.split(dev_x)):
         train_x, val_x = dev_x[train_index], dev_x[val_index]
         train_y, val_y = dev_y[train_index], dev_y[val_index]
@@ -151,32 +152,104 @@ def main():
                                model, batch_size, epochs, optimizer, criterion)
         models.append(model)
         histories.append(history)
-    mean_train_loss = np.mean([history['train_loss'] for history in histories], axis=0)
-    mean_val_loss = np.mean([history['val_loss'] for history in histories], axis=0)
-    std_train_loss = np.std([history['train_loss'] for history in histories], axis=0)
-    std_val_loss = np.std([history['val_loss'] for history in histories], axis=0)
+    train_val_loss = 1
+    if train_val_loss:
+        mean_train_loss = np.mean([history['train_loss'] for history in histories], axis=0)
+        mean_val_loss = np.mean([history['val_loss'] for history in histories], axis=0)
+        std_train_loss = np.std([history['train_loss'] for history in histories], axis=0)
+        std_val_loss = np.std([history['val_loss'] for history in histories], axis=0)
+        _, ax = plt.subplots(figsize=(5,5))
+        #ax.errorbar(range(epochs), mean_train_loss, yerr=std_train_loss, label='train loss', markersize=6, ls='-')
+        #ax.errorbar(range(epochs), mean_val_loss, yerr=std_val_loss, label='val loss', markersize=6, ls='--')
+        ax.plot(range(epochs), mean_train_loss, '-o', label='train loss', markersize=4)
+        ax.plot(range(epochs), mean_val_loss, '-o', label='val loss', markersize=4)
+        plt.title("Loss versus epochs")
+        plt.xlabel('Epochs [-]')
+        plt.ylabel('Loss [-]')
+        plt.legend()
+        plt.show()
+        #print(f"mean_train_loss = {mean_train_loss[0]:2.5f} ± {std_train_loss[0]:2.3f}")
+        #print(f"mean_val_loss = {mean_val_loss[0]:2.5f} ± {std_val_loss[0]:2.3f}")
+        
+    model.eval()
+    draw_voltage_capacity(model, dev_x, X_scaler, dev_y, num_features)
+    # Evaluate
+    # TODO: remember to train the model with the entire dataset
+    test_loss = evaluate(model, test_x, test_y, criterion)
+    print(f"test loss = {test_loss:2.5f}")
+    draw_voltage_capacity(model, test_x, X_scaler, test_y, num_features)
 
-    _, ax = plt.subplots(figsize=(5,5))
-    ax.errorbar(range(epochs), mean_train_loss, yerr=std_train_loss, label='train loss', markersize=6, ls='-')
-    ax.errorbar(range(epochs), mean_val_loss, yerr=std_val_loss, label='val loss', markersize=6, ls='--')
-    plt.title("Loss versus epochs")
+    # Inference
+    future_cycle = 10
+    x_pred = inference(model, future_cycle, dev_x[:1])
+    draw_voltage_capacity(model, x_pred, X_scaler, dev_y[future_cycle+1:future_cycle+2], num_features)
+
+    _, ax = plt.subplots(figsize=(8,8))
+    first_window = dev_x[:1]
+    for future_cycle in range(10, 151, 20):
+        x_pred = inference(model, future_cycle, first_window)
+        if len(dev_y[future_cycle+1:future_cycle+2]):
+            (capacity_overtime_pred, 
+            voltage_overtime_pred, 
+            capacity_overtime, 
+            voltage_overtime) = get_voltage_capacity(model, x_pred, X_scaler, dev_y[future_cycle+1:future_cycle+2], num_features)
+            
+            ax.scatter(capacity_overtime_pred[0],
+                        voltage_overtime_pred[0],
+                        label=f'Pred (cycle={future_cycle})', s=6)#, facecolors="none", edgecolors="k")
+            ax.plot(capacity_overtime[0],
+                    voltage_overtime[0],
+                    '--k')
+                    #label='GT')
+        else:
+            (capacity_overtime_pred, 
+            voltage_overtime_pred, 
+            _, 
+            _) = get_voltage_capacity(model, x_pred, X_scaler, dev_y[:1], num_features)
+            ax.scatter(capacity_overtime_pred[0],
+                        voltage_overtime_pred[0],
+                        label=f'Pred (cycle={future_cycle})', s=6)#, facecolors="none", edgecolors="k")
+        first_window = x_pred
+    plt.xlabel("capacity")
+    plt.ylabel("voltage")
     plt.legend()
     plt.show()
+        
+def inference(model, future_cycle, first_window):
+    """TODO"""
+    x_out = first_window
+    for _ in range(future_cycle):
+        x_out, _ = model(x_out)
+    return x_out
 
-    #print(f"mean_train_loss = {mean_train_loss[0]:2.5f} ± {std_train_loss[0]:2.3f}")
-    #print(f"mean_val_loss = {mean_val_loss[0]:2.5f} ± {std_val_loss[0]:2.3f}")
-    
-    model.eval()
-    init_shape = dev_y.shape
-
-    x_outputs, _ = model(dev_x)
+def get_voltage_capacity(model, X, X_scaler, y, num_features):
+    """TODO"""
+    init_shape = y.shape
+    x_outputs, _ = model(X)
     x_outputs = x_outputs.cpu().detach().numpy()
     x_outputs = X_scaler.inverse_transform(x_outputs.reshape(-1, num_features))
     x_outputs = np.reshape(x_outputs, (init_shape[0], init_shape[1], -1, num_features))
     capacity_overtime_pred = x_outputs[:, -1, :, -1]
     voltage_overtime_pred = x_outputs[:, -1, :, 0]
 
-    dev_inv = dev_y.cpu().detach().numpy()
+    dev_inv = y.cpu().detach().numpy()
+    dev_inv = X_scaler.inverse_transform(dev_inv.reshape(-1, num_features))
+    dev_y_features = np.reshape(dev_inv, (init_shape[0], init_shape[1], -1, num_features))
+    capacity_overtime = dev_y_features[:, -1, :, -1]
+    voltage_overtime = dev_y_features[:, -1, :, 0]
+    return capacity_overtime_pred, voltage_overtime_pred, capacity_overtime, voltage_overtime
+
+def draw_voltage_capacity(model, X, X_scaler, y, num_features):
+    """TODO"""
+    init_shape = y.shape
+    x_outputs, _ = model(X)
+    x_outputs = x_outputs.cpu().detach().numpy()
+    x_outputs = X_scaler.inverse_transform(x_outputs.reshape(-1, num_features))
+    x_outputs = np.reshape(x_outputs, (init_shape[0], init_shape[1], -1, num_features))
+    capacity_overtime_pred = x_outputs[:, -1, :, -1]
+    voltage_overtime_pred = x_outputs[:, -1, :, 0]
+
+    dev_inv = y.cpu().detach().numpy()
     dev_inv = X_scaler.inverse_transform(dev_inv.reshape(-1, num_features))
     dev_y_features = np.reshape(dev_inv, (init_shape[0], init_shape[1], -1, num_features))
     capacity_overtime = dev_y_features[:, -1, :, -1]
@@ -186,20 +259,15 @@ def main():
     for cycle_num in range(1):
         ax.scatter(capacity_overtime_pred[cycle_num],
                    voltage_overtime_pred[cycle_num],
-                   label=f'cycle {cycle_num} Pred', s=6, facecolors="none", edgecolors="k")
+                   label='Pred', s=6, facecolors="none", edgecolors="k")
         ax.plot(capacity_overtime[cycle_num],
-                   voltage_overtime[cycle_num],
-                   '--k',
-                   label=f'cycle {cycle_num} GT')
+                voltage_overtime[cycle_num],
+                '--k',
+                label='GT')
     plt.xlabel("capacity")
     plt.ylabel("voltage")
     plt.legend()
     plt.show()
-
-    # Evaluate
-    # TODO: remember to train the model with the entire dataset
-    test_loss = evaluate(model, test_x, test_y, criterion)
-    print(f"test loss = {test_loss:2.5f}")
 
 
 if __name__ == "__main__":

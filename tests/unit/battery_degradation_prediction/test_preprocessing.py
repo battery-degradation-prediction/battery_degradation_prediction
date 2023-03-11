@@ -1,52 +1,52 @@
+"""
+Tests for the preprocessing function
+"""
 import unittest
 import numpy as np
 import pandas as pd
-import datetime
-from battery_degradation_prediction import preprocessing
+import preprocessing
 
-def get_data():
-    """Obtain data from https://uwdirect.github.io/SEDS_content/atomradii.csv"""
+# def get_data():
+#     """Obtain data from https://uwdirect.github.io/SEDS_content/atomradii.csv"""
 
-    df = pd.DataFrame(
-        pd.read_csv("https://uwdirect.github.io/SEDS_content/atomradii.csv")
-    )
-    X_fit = df[df.columns[:2]].iloc[:-1]
-    X_test = df[df.columns[:2]].iloc[-1:]
-    k = 3
-    y_fit_df = df[df.columns[-1]].iloc[:-1]
-    y_test_df = df[df.columns[-1]].iloc[-1:]
-    classes = np.unique(y_fit_df)
-    y_fit = [np.where(y == classes)[0][0] for y in y_fit_df.iloc]
-    y_test = [np.where(y == classes)[0][0] for y in y_test_df.iloc]
-    return X_fit, X_test, k, y_fit, y_test
+#     df = pd.DataFrame(
+#         pd.read_csv("https://uwdirect.github.io/SEDS_content/atomradii.csv")
+#     )
+#     X_fit = df[df.columns[:2]].iloc[:-1]
+#     X_test = df[df.columns[:2]].iloc[-1:]
+#     k = 3
+#     y_fit_df = df[df.columns[-1]].iloc[:-1]
+#     y_test_df = df[df.columns[-1]].iloc[-1:]
+#     classes = np.unique(y_fit_df)
+#     y_fit = [np.where(y == classes)[0][0] for y in y_fit_df.iloc]
+#     y_test = [np.where(y == classes)[0][0] for y in y_test_df.iloc]
+#     return X_fit, X_test, k, y_fit, y_test
 
+# class UnitTests(unittest.TestCase):
+#     """Unit test classes"""
 
-class UnitTests(unittest.TestCase):
-    """Unit test classes"""
-
-    def test_preprocessing(self):
-        """one shot test for predict()"""
-        #X_fit, X_test, k, y_fit, _ = get_data()
-        try:
-            predictions = [0]#predict(X_fit, y_fit, k, X_test)
-            true = [0]
-            np.testing.assert_array_equal(true, predictions)
-        except:
-            raise
-
+#     def test_preprocessing(self):
+#         """one shot test for predict()"""
+#         #X_fit, X_test, k, y_fit, _ = get_data()
+#         try:
+#             predictions = [0]#predict(X_fit, y_fit, k, X_test)
+#             true = [0]
+#             np.testing.assert_array_equal(true, predictions)
+#         except:
+#             raise
 
 class TestConvertDatetimeStrToObj(unittest.TestCase):
     """
-    This class manages the tests for the function that converts 
+    This class manages the tests for the function that converts
     datetime strings to objects.
     """
     def test_smoke(self):
         """
         Simple smoke test to make sure function runs.
         """
-        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2], 
-            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58', 
-                         '2008-04-02-15-26-17','2008-04-02-15-26-35', 
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2],
+            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58',
+                         '2008-04-02-15-26-17','2008-04-02-15-26-35',
                          '2008-04-02-15-26-53']})
 
         test_df["time"] = test_df["datetime"].apply(preprocessing.convert_datetime_str_to_obj)
@@ -54,12 +54,12 @@ class TestConvertDatetimeStrToObj(unittest.TestCase):
     def test_input_dates_not_formatted_correctly(self):
         """
         Edge test to make sure the function throws a ValueError
-        when the inputted dataframe's datetime str is not formatted 
+        when the inputted dataframe's datetime str is not formatted
         correctly.
         """
-        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2], 
-            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58', 
-                         '2008-04-02-15:26:17','2008-04-02-15-26-35', 
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2],
+            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58',
+                         '2008-04-02-15:26:17','2008-04-02-15-26-35',
                          '2008-04-02-15-26-53']})
         
         with self.assertRaises(ValueError):
@@ -68,16 +68,16 @@ class TestConvertDatetimeStrToObj(unittest.TestCase):
 class TestCalcTestTimeFromDatetime(unittest.TestCase):
     """
     This class manages the tests for the function that calculates
-    the total elapased time from start to end, in hours, of all 
-    cycling data provided.  
+    the total elapased time from start to end, in hours, of all
+    cycling data provided.
     """
     def test_smoke(self):
         """
         Simple smoke test to make sure function runs.
         """
-        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2], 
-            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58', 
-                         '2008-04-02-15-26-17','2008-04-02-15-26-35', 
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2],
+            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58',
+                         '2008-04-02-15-26-17','2008-04-02-15-26-35',
                          '2008-04-02-15-26-53']})
         test_df["time"] = test_df["datetime"].apply(preprocessing.convert_datetime_str_to_obj)
 
@@ -89,28 +89,28 @@ class TestCalcTestTimeFromDatetime(unittest.TestCase):
         Edge test to make sure the function throws a ValueError
         when the first datetime is not the start of the testing time.
         """
-        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2], 
-            'datetime': ['2008-04-02-15:26:17', '2008-04-02-15-25-58', 
-                         '2008-04-02-15-25-41','2008-04-02-15-26-35', 
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 2, 2],
+            'datetime': ['2008-04-02-15-26-17', '2008-04-02-15-25-58',
+                         '2008-04-02-15-25-41','2008-04-02-15-26-35',
                          '2008-04-02-15-26-53']})
         test_df["time"] = test_df["datetime"].apply(preprocessing.convert_datetime_str_to_obj)
         
         with self.assertRaises(ValueError):
-            test_df["elapsed_time"] = test_df["time"].apply(preprocessing.calc_test_time_from_datetime,
-                                                         args=(test_df["time"].iloc[0],))
+            test_df["elapsed_time"] = test_df["time"].apply(
+                preprocessing.calc_test_time_from_datetime,args=(test_df["time"].iloc[0],))
 
 class TestIsolateDischargeCycleData(unittest.TestCase):
     """
-    This class manages the tests for the function that returns 
-    a dataframe of only discharge cycles.
+    This class manages the tests for the function that 
+    returns a dataframe of only discharge cycles.
     """
     def test_smoke(self):
         """
         Simple smoke test to make sure function runs.
         """
-        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 1, 1], 
-            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58', 
-                         '2008-04-02-15-26-17','2008-04-02-15-26-35', 
+        test_df = pd.DataFrame(data={'cycle': [1, 1, 1, 1, 1],
+            'datetime': ['2008-04-02-15-25-41', '2008-04-02-15-25-58',
+                         '2008-04-02-15-26-17','2008-04-02-15-26-35',
                          '2008-04-02-15-26-53'],
                          'type': ['discharging', 'discharging',
                                    'discharging', 'charging', 'charging']})
@@ -179,7 +179,7 @@ class TestAddElapsedTimePerCycle(unittest.TestCase):
                          'type': ['discharging', 'discharging',
                                    'discharging', 'discharging', 'charging']})
         with self.assertRaises(ValueError):
-            df_discharge = preprocessing.isolate_discharge_cyc_data(test_df)
+            time_elasped_list = preprocessing.add_elapsed_time_per_cycle(test_df)
 
 class TestCalculateCapcityDuringDischarge(unittest.TestCase):
     """
@@ -237,7 +237,8 @@ class TestCalculateCapcityDuringDischarge(unittest.TestCase):
         df_discharge.reset_index(drop=True, inplace=True)
         
         with self.assertRaises(ValueError):
-            df_discharge = preprocessing.isolate_discharge_cyc_data(df_discharge)
+            capcity_during_discharge = preprocessing.calc_capacity_during_discharge(df_discharge)
+
 
 class TestRemoveJumpVoltage(unittest.TestCase):
     """
@@ -350,5 +351,6 @@ class TestGetCleanData(unittest.TestCase):
         """
         #path = "../../data/B0005.csv"
         #preprocessing.get_clean_data(path)
+
 
 

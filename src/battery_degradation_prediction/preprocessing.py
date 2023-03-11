@@ -300,6 +300,35 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
         raise ValueError("Returned list should have the same length as the len of the input dataframe")
     return capcity_during_discharge_list
 
+<<<<<<< HEAD
+def remove_current_in_k_value(dataframe, column, k):
+    """Remove current that is larger than -k and smaller than k
+    and replace them to NAN.     
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        The dataframe containing only the discharge cycles
+    column : str
+        The column name for remove k values
+    k: float
+        The values wanted to be removed
+
+    Returns
+    -------
+    dataframe : pd.DataFrame
+        The dataframe without number from k to -k.
+    """
+    dataframe[column] = dataframe[column][abs(dataframe[column]) > k]
+    return dataframe
+
+def main():
+    """Main function"""
+    path = "../../data/B0005.csv"
+    df = load_data(path)
+    df = df.iloc[:10500]
+=======
+>>>>>>> master
 
 def capacity_during_discharge(df_discharge):
     """TODO"""

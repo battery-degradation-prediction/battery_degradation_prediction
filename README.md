@@ -3,6 +3,7 @@
 [![Lint Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/lint/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction/actions?query=workflow%3Alint)
 [![Documentation](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/documentation/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+>>>>>>> master
 
 # User Stories
 new coverage

@@ -5,7 +5,8 @@ import seaborn as sns
 
 # visulizing_cycle_data(dataframe)
 
-# We want to display the heading names of the dataframe as a list, and using that list plot features
+# We want to display the heading names of the dataframe as a list,
+# and using that list plot features
 # column_headers = list(dataframe.columns.values)
 
 # Now we want to plot certain features... in particular, we want

@@ -4,7 +4,8 @@ import numpy as np
 
 from scipy.interpolate import CubicSpline
 
-# features_list = ['temperature_measured', 'voltage_measured', 'current_measured', 'capacity']
+# features_list = ['temperature_measured', 'voltage_measured',
+# 'current_measured', 'capacity']
 def spine_interpolate(dataframe, features_list, num_row: int = 100) -> pd.DataFrame:
     """
     Spine interpolate in a discharge dataframe using cubic spline interpolation.

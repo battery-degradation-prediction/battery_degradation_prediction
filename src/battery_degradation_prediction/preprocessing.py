@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from battery_degradation_prediction.interpolate import spine_interpolate
+
 
 # func to convert datetimes in dataframe to time objects    WORKS
 def convert_datetime_str_to_obj(date_time_str: str) -> datetime:
@@ -300,7 +302,6 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
         raise ValueError("Returned list should have the same length as the len of the input dataframe")
     return capcity_during_discharge_list
 
-<<<<<<< HEAD
 def remove_current_in_k_value(dataframe, column, k):
     """Remove current that is larger than -k and smaller than k
     and replace them to NAN.     
@@ -322,13 +323,6 @@ def remove_current_in_k_value(dataframe, column, k):
     dataframe[column] = dataframe[column][abs(dataframe[column]) > k]
     return dataframe
 
-def main():
-    """Main function"""
-    path = "../../data/B0005.csv"
-    df = load_data(path)
-    df = df.iloc[:10500]
-=======
->>>>>>> master
 
 def capacity_during_discharge(df_discharge):
     """TODO"""
@@ -359,7 +353,7 @@ def plot_remove_jump_voltage(df_discharge):
     return
 
 
-def get_clean_data(path: str, data_num: int=10000) -> pd.DataFrame:
+def get_clean_data(path: str, data_num: int=10000, num_row_per_cycle:int=100) -> pd.DataFrame:
     """
     Convert the csv file from path into clean data
     """
@@ -384,7 +378,15 @@ def get_clean_data(path: str, data_num: int=10000) -> pd.DataFrame:
     )
     remove_jump_voltage(df_discharge)
     df_discharge.dropna(axis="columns", inplace=True)
+    df_discharge = remove_unwanted_current(df_discharge, 'current_measured', -0.5, 0.5)
+    df_discharge.dropna(axis="index", inplace=True)
 
+    spline_columns = ["voltage_measured", 
+                      "current_measured", 
+                      "temperatrue_measured", 
+                      "capcity_during_discharge",
+                      "capacity"]
+    df_discharge = spine_interpolate(df_discharge, spline_columns, num_row_per_cycle)
     return df_discharge
 
 def get_cycle_data(df_discharge, cycle_num):
@@ -400,8 +402,9 @@ def get_cycle_data(df_discharge, cycle_num):
 if __name__ == "__main__":
     path = "../../data/B0005.csv"
     df_discharge = get_clean_data(path)
-    print(df_discharge.head())
+    print(df_discharge)
     print(df_discharge.columns)
+    """
     for i in range(1, 8):
         capacity_final = df_discharge[df_discharge["cycle"] == i][
             "capcity_during_discharge"
@@ -410,3 +413,4 @@ if __name__ == "__main__":
         print(
             f"from_voltage_{i} = {capacity_final:1.5f}, from_cycle_{i+1} = {capacity_next:1.5f}"
         )
+    """

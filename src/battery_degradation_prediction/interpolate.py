@@ -1,6 +1,10 @@
+"""spline module"""
+import pandas as pd
+import numpy as np
+
 from scipy.interpolate import CubicSpline
 # features_list = ['temperature_measured', 'voltage_measured', 'current_measured', 'capacity']
-def spine_interpolate(dataframe, features_list) -> pd.DataFrame:
+def spine_interpolate(dataframe, features_list, num_row:int = 100) -> pd.DataFrame:
     """
     Spine interpolate in a discharge dataframe using cubic spline interpolation.
 
@@ -16,13 +20,13 @@ def spine_interpolate(dataframe, features_list) -> pd.DataFrame:
         - time (float): elapsed time within each cycle
         - columns specified in features_list (float): interpolated values for each feature
     """
-    end_cycle = dataframe['cycle'].max()
+    end_cycle = int(dataframe['cycle'].max())
     dfs = []
     for i in range(1, end_cycle+1):
         cycle = dataframe.loc[dataframe['cycle'] == i]
         df_features = []
         x_discharge = cycle['elapsed_time_per_cycle']
-        time_x = np.linspace(0,x_discharge.max(),num=100)
+        time_x = np.linspace(0, x_discharge.max(), num=num_row)
         for feature in features_list:
             y_discharge = cycle[feature]        
             y_try = y_discharge.to_numpy()

@@ -134,9 +134,8 @@ def train(X_train, y_train, model, epochs, optimizer, criterion):
         optimizer.step()  # Does the update
         if epoch % 10 == 0:
             _, predicted = torch.max(outputs, 1)
-            print(
-                f"Epoch = {epoch}, loss = {loss:2.5f}, accuracy = {calculate_accuracy(predicted.detach().numpy(), train_labels.detach().numpy()):1.5f}"
-            )
+            accuracy = calculate_accuracy(predicted.detach().numpy(), train_labels.detach().numpy())
+            print(f"Epoch = {epoch}, loss = {loss:2.5f}, accuracy = {accuracy:1.5f}")
     return model
 
 

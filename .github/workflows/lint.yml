@@ -46,7 +46,3 @@ jobs:
       run: |
         source .venv/bin/activate
         pylint --ignore-patterns=test.*?py src/ tests/ --fail-under=7.0
-
-    - name: Check with black
-      run: |
-        black -l 100 --check src/

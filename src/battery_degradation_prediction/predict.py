@@ -37,7 +37,7 @@ def predict(supervised_model,
     supervised_model = supervised_model.to(device)
     unsupervised_model = unsupervised_model.to(device)
     x_pred = inference(unsupervised_model, future_cycle, cycle_window)
-    num_rows = 172
+    num_rows = 100
     num_features = 4
     window_size = 5
     x_pred = x_pred.cpu()[0, 0].view(num_rows, num_features).detach().numpy()
@@ -70,7 +70,7 @@ def main():
     model_hyper = (input_shape, d_model, nhead, num_layers, output_size, dropout)
     supervised_model = load_model(Transformer, supervised_model_path, model_hyper)
     
-    num_rows = 172
+    num_rows = 100
     input_shape = (window_size-1, num_features*num_rows)
     d_model = 8
     nhead = 2
@@ -81,7 +81,7 @@ def main():
     unsupervised_model = load_model(TransformerReduction, unsupervised_model_path, model_hyper)
 
     data_path = "../../data/B0005.csv"
-    df_discharge = get_clean_data(data_path, int(5e6))
+    df_discharge = get_clean_data(data_path, int(1e7))
     
     feature_names = [
         "cycle",
@@ -93,10 +93,10 @@ def main():
     ]
     test_size = 0.2
     (_, _), (_, _), X_scaler, y_scaler = load_supervised_data(df_discharge, test_size, feature_names, window_size)
-    (dev_x, dev_y), (test_x, test_y), _ = load_unsupervised_data(df_discharge, test_size, feature_names)
+    (dev_x, dev_y), (test_x, test_y), _ = load_unsupervised_data(df_discharge, test_size, feature_names, randomize=False)
     print(f'dev_x = {dev_x.shape}, dev_y = {dev_y.shape}\ntest_x = {test_x.shape}, test_y = {test_y.shape}')
     dev_x = torch.from_numpy(dev_x).type(torch.float32).to(device)
-    future_cycles = range(10, 131, 10)
+    future_cycles = range(10, 161, 10)
     gif_image = []
     for future_cycle in future_cycles:
         cycle_data = get_cycle_data(df_discharge, future_cycle)

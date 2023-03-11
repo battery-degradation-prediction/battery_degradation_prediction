@@ -41,7 +41,7 @@ def dev_test_split_supervised(df_discharge: pd.DataFrame, test_size: float, wind
         test_y_data[..., np.newaxis],
     )
 
-def dev_test_split_unsupervised(df_discharge: pd.DataFrame, test_size: float, window_size: int=5):
+def dev_test_split_unsupervised(df_discharge: pd.DataFrame, test_size: float, window_size: int=5, randomize=True):
     """TODO"""
     num_train = int(len(df_discharge.groupby("cycle")) * (1-test_size))
     num_data_per_group = df_discharge.groupby("cycle").count().min().iloc[0]
@@ -49,8 +49,15 @@ def dev_test_split_unsupervised(df_discharge: pd.DataFrame, test_size: float, wi
     for idx, group in enumerate(df_discharge.groupby("cycle")):
         cycle_data[idx] = group[1].iloc[:num_data_per_group]
     windows = windowing_numpy(cycle_data, window_size, 1)
-    dev_x_data = windows[:num_train]
-    test_x_data = windows[num_train:]
+
+    if randomize: 
+        random_list = shuffle(range(len(windows)))
+    else: 
+        random_list = range(len(windows))
+    dev_index, test_index = random_list[:num_train], random_list[num_train:]
+    
+    dev_x_data = windows[dev_index]
+    test_x_data = windows[test_index]
     assert len(dev_x_data) + len(test_x_data) == len(windows), "# of dev + # of test != # of windows"
     return dev_x_data, test_x_data
 
@@ -88,11 +95,11 @@ def load_supervised_data(
     return (dev_x, dev_y), (test_x, test_y), X_scaler, y_scaler
 
 def load_unsupervised_data(
-    df_discharge: pd.DataFrame, test_size: float, feature_names: list[str], window_size:int=5
+    df_discharge: pd.DataFrame, test_size: float, feature_names: list[str], window_size:int=5, randomize=True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """TODO"""
     df_feature = df_discharge[feature_names]
-    dev_x_data, test_x_data = dev_test_split_unsupervised(df_feature, test_size, window_size)
+    dev_x_data, test_x_data = dev_test_split_unsupervised(df_feature, test_size, window_size, randomize)
     dev_x_data, test_x_data, X_scaler = standard_transform_x(dev_x_data, test_x_data)
     dev_y = dev_x_data[:, 1:]
     dev_x = dev_x_data[:, :-1]

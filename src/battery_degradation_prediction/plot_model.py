@@ -77,3 +77,39 @@ def plot_future_capacity(df_feature, input_shape, model, X_scaler, y_scaler, fut
             plt.legend()
             plt.show()
             break
+
+def plot_future_capacities(df_feature, input_shape, models, X_scaler, y_scaler, future_cycle, window_size):
+    """TODO"""
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    for idx, group in enumerate(df_feature.groupby("cycle")):
+        data = []
+        data_y = []
+        if idx == future_cycle:
+            cycle_data = group[1].iloc[:, 1:]
+            cycle_data_windows, capacities = windowing(cycle_data, window_size, 1)
+            for (test_x, test_y) in zip(cycle_data_windows, capacities):
+                data.append(test_x[:,:-1])
+                data_y.append(test_y)
+            data = np.asarray(data)
+            data = X_scaler.transform(np.reshape(data, (-1, input_shape[-1])))
+            data = np.reshape(data, (-1, input_shape[0], input_shape[-1]))
+            break
+    cycles = [10, 50, 100, 159]
+    edgecolors = ['k', 'r', 'b', 'g']
+    markers = ['<', '^', 's', 'o']
+    plt.figure(figsize=(6,6))
+    for cycle_index, model in enumerate(models):
+        model.eval()
+        pred = model(torch.from_numpy(data).type(torch.float32).to(device))
+        data_inv = X_scaler.inverse_transform(np.reshape(data, (-1, input_shape[-1])))
+        data_inv = np.reshape(data_inv, (-1, input_shape[0], input_shape[-1]))
+        pred = pred.cpu().detach().numpy()
+        pred = y_scaler.inverse_transform(pred).reshape(-1,)
+        plt.scatter(pred, data_inv[:, 0, 0], s=12, marker=markers[cycle_index], facecolors="none", edgecolors=edgecolors[cycle_index], label=f"Prediction {cycles[cycle_index]}")
+
+    plt.plot(data_y, data_inv[:, 0, 0], '--k', label='True')
+    plt.xlabel("cummulative capacity")
+    plt.ylabel("voltage measure")
+    plt.title(f"Test cycle {future_cycle}")
+    plt.legend()
+    plt.show()

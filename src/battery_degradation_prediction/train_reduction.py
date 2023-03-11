@@ -21,7 +21,7 @@ def get_batch(X, y, batch_size, batch_num):
     targets = y[batch_num*batch_size:(batch_num+1)*batch_size]
     return features, targets
 
-def train(train_x, train_y, val_x, val_y, model, batch_size, epochs, optimizer, criterion):
+def train(train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, criterion):
     """TODO"""
     num_batches = len(train_x) // batch_size
     history = {}
@@ -65,7 +65,7 @@ def evaluate(
 def main():
     """TODO"""
     path = "../../data/B0005.csv"
-    df_discharge = get_clean_data(path, int(5e6))
+    df_discharge = get_clean_data(path, int(1e7))
     feature_names = [
         "cycle",
         "voltage_measured",
@@ -76,7 +76,7 @@ def main():
     ]
     test_size = 0.2
     num_features = 4
-    (dev_x, dev_y), (test_x, test_y), X_scaler = load_unsupervised_data(df_discharge, test_size, feature_names)
+    (dev_x, dev_y), (test_x, test_y), X_scaler = load_unsupervised_data(df_discharge, test_size, feature_names, randomize=False)
     print(f'dev_x = {dev_x.shape}, dev_y = {dev_y.shape}\ntest_x = {test_x.shape}, test_y = {test_y.shape}')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"device = {device}")
@@ -87,7 +87,7 @@ def main():
     assert not (torch.isnan(dev_x).any() or torch.isnan(dev_y).any()), "Input X contains nan"
 
     # Set hyperparameters
-    epochs = 200
+    epochs = 0
     input_shape = dev_x.shape[1:]
     d_model = 8
     nhead = 2
@@ -95,7 +95,7 @@ def main():
     dropout = 0.2
     latent_size = 10
     batch_size = 4
-    num_folds = 10
+    num_folds = 5
     
     # Define model
     model = TransformerReduction(input_shape, d_model, nhead, num_layers, latent_size, dropout).to(device)
@@ -107,50 +107,59 @@ def main():
     models = []
     kf = KFold(n_splits=num_folds)
     kf.get_n_splits(dev_x)
-
-    for fold, (train_index, val_index) in enumerate(kf.split(dev_x)):
-        train_x, val_x = dev_x[train_index], dev_x[val_index]
-        train_y, val_y = dev_y[train_index], dev_y[val_index]
-        print(f"ʕ •ᴥ•ʔ -- Fold {fold} -- ʕ •ᴥ•ʔ")
-        model, history = train(train_x, train_y, 
-                               val_x, val_y,
-                               model, batch_size, epochs, optimizer, criterion)
-        models.append(model)
-        histories.append(history)
-        break
-    plot_train_val_loss(histories)
+    cross_val = 0
+    if cross_val:
+        for fold, (train_index, val_index) in enumerate(kf.split(dev_x)):
+            train_x, val_x = dev_x[train_index], dev_x[val_index]
+            train_y, val_y = dev_y[train_index], dev_y[val_index]
+            print(f"ʕ •ᴥ•ʔ -- Fold {fold} -- ʕ •ᴥ•ʔ")
+            model, history = train(train_x, train_y, 
+                                val_x, val_y,
+                                model, epochs, batch_size, optimizer, criterion)
+            models.append(model)
+            histories.append(history)
+        plot_train_val_loss(histories)
 
     model_path = "./unsupervised_model"
-    torch.save(model.state_dict(), model_path)
+    model = TransformerReduction(input_shape, d_model, nhead, num_layers, latent_size, dropout).to(device)
+    optimizer = optim.Adam(model.parameters())
+    model, history = train(dev_x, dev_y, 
+                            dev_x, dev_y,
+                            model, epochs, batch_size, optimizer, criterion)
+    #torch.save(model.state_dict(), model_path)
+    model.load_state_dict(torch.load(model_path))
 
     model.eval()
-    draw_voltage_capacity(model, dev_x, X_scaler, dev_y, num_features)
+    #draw_voltage_capacity(model, dev_x, X_scaler, dev_y, num_features)
     # Evaluate
-    # TODO: remember to train the model with the entire dataset
 
     test_loss = evaluate(model, test_x, test_y, criterion)
     print(f"test loss = {test_loss:2.5f}")
-    draw_voltage_capacity(model, test_x, X_scaler, test_y, num_features)
+    #draw_voltage_capacity(model, test_x, X_scaler, test_y, num_features)
 
+    
     # Inference
     future_cycle = 10
     x_pred = inference(model, future_cycle, dev_x[:1])
-    draw_voltage_capacity(model, x_pred, X_scaler, dev_y[future_cycle+1:future_cycle+2], num_features)
-    """
+    #draw_voltage_capacity(model, x_pred, X_scaler, dev_y[future_cycle+1:future_cycle+2], num_features)
+    
     _, ax = plt.subplots(figsize=(8,8))
     first_window = dev_x[:1]
-    
-    for future_cycle in range(10, 151, 20):
-        x_pred = inference(model, future_cycle, first_window)
+    markers = ["^", "X", "<", ">", "o", '*', "v"]
+    for idx, future_cycle in enumerate(range(5, 131, 20)):
+        first_window = dev_x[future_cycle-5:future_cycle-4]
+        future = 5
+        x_pred = inference(model, future, first_window)
         if len(dev_y[future_cycle+1:future_cycle+2]):
             (capacity_overtime_pred, 
             voltage_overtime_pred, 
             capacity_overtime, 
-            voltage_overtime) = get_voltage_capacity(model, x_pred, X_scaler, dev_y[future_cycle+1:future_cycle+2], num_features)
+            voltage_overtime) = get_voltage_capacity(model, x_pred, X_scaler, dev_y[future_cycle-future:future_cycle-future+1], num_features)
             
             ax.scatter(capacity_overtime_pred[0],
                         voltage_overtime_pred[0],
-                        label=f'Pred (cycle={future_cycle})', s=6)#, facecolors="none", edgecolors="k")
+                        marker=markers[idx],
+                        label=f'Pred (cycle={future_cycle})', s=25)#, facecolors="none", edgecolors="k")
             ax.plot(capacity_overtime[0],
                     voltage_overtime[0],
                     '--k')
@@ -162,13 +171,14 @@ def main():
             _) = get_voltage_capacity(model, x_pred, X_scaler, dev_y[:1], num_features)
             ax.scatter(capacity_overtime_pred[0],
                         voltage_overtime_pred[0],
-                        label=f'Pred (cycle={future_cycle})', s=6)#, facecolors="none", edgecolors="k")
-        first_window = x_pred
+                        label=f'Pred (cycle={future_cycle})', s=12)#, facecolors="none", edgecolors="k")
+        #first_window = x_pred
+
     plt.xlabel("capacity")
     plt.ylabel("voltage")
     plt.legend()
     plt.show()
-    """
+    
 
 def inference(model, future_cycle, first_window):
     """TODO"""

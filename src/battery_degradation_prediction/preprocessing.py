@@ -358,6 +358,15 @@ def get_clean_data(path: str, data_num: int=10000) -> pd.DataFrame:
 
     return df_discharge
 
+def get_cycle_data(df_discharge, cycle_num):
+    """TODO"""
+    try:
+        for idx, group in enumerate(df_discharge.groupby("cycle")):
+            if idx+1 == cycle_num:
+                return group[1]
+        raise IndexError(f"Total cycles in the dataframe = {idx+1}, but ask for the {cycle_num}th cycle")
+    except IndexError as err:
+        print('IndexError:', err)
 
 if __name__ == "__main__":
     path = "../../data/B0005.csv"

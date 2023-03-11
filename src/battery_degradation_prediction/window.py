@@ -1,3 +1,5 @@
+"""Window module"""
+
 import numpy as np
 import pandas as pd
 
@@ -52,15 +54,11 @@ def windowing_numpy(data: np.ndarray, window_size: int, stride: int):
 
     num_windows = int((len(data) - window_size) / stride)
     windows = []
-    y_labels = []
-    x_labels = []
     for i in range(num_windows):
         start_idx = i * stride
         end_idx = start_idx + window_size        
         windows.append(data[start_idx:end_idx, :, 1:-1])
-        x_labels.append(data[end_idx, :, 1:-1])
-        y_labels.append(data[end_idx, 0, -1])
-    return np.array(windows), np.array(x_labels), np.array(y_labels)
+    return np.array(windows)
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ def convert_datetime_str_to_obj(date_time_str: str) -> datetime:
     time_object : datetime
         A datetime object containing year, month, day, hour, minute, and second.
     """
-    if not datetime.datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S"):
+    if not datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S"):
         raise ValueError()
     time_object = datetime.strptime(date_time_str, "%Y-%m-%d-%H-%M-%S")
     return time_object
@@ -150,12 +150,12 @@ def calc_test_time_from_datetime(target_time: datetime, start_time: datetime) ->
     """
 
     second_to_hour = 1.0 / 3600.0
-    time_elapsed = (target_time - start_time).seconds * second_to_hour
-    if any([(time_elapsed < 0.0)]):
-        raise ValueError("Cannot have neagtive time. Ensure the first row in time is the global start time of experiment.")
-    else:
+    if (start_time <= target_time) == True:
         pass
-
+    else:
+        raise ValueError("Cannot have neagtive time. Ensure the first row in time is the global start time of experiment.")
+    time_elapsed = (target_time - start_time).seconds * second_to_hour
+    
     return time_elapsed
 
 
@@ -228,7 +228,7 @@ def remove_jump_voltage(df_discharge: pd.DataFrame) -> pd.DataFrame:
     """
     cummulative_num = 0
     drop_ranges = []
-    
+
     for voltage_group in df_discharge.groupby("cycle")["voltage_measured"]:
         min_voltage_index = np.argmin(voltage_group[1])
         num_group = voltage_group[1].shape[0]

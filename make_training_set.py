@@ -84,3 +84,5 @@ def make_training_set(dir_path : str) -> pd.DataFrame:
     training_set = pd.concat(processed_list)
 
     return training_set
+
+#Edition 03/11/23

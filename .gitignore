@@ -59,7 +59,7 @@ coverage.xml
 .pytest_cache/
 
 # data
-data/
+data/*.csv
 
 # results
 results/

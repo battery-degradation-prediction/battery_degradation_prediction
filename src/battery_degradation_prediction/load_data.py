@@ -3,74 +3,37 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 import sklearn.preprocessing
-import sklearn.model_selection
-from preprocessing import get_clean_data
-from window import windowing
+from sklearn.utils import shuffle
+from battery_degradation_prediction.preprocessing import get_clean_data
+from battery_degradation_prediction.window import windowing, windowing_numpy
 
 
-def dev_test_split(df_discharge: pd.DataFrame, test_size: float):
+def dev_test_split_supervised(df_discharge: pd.DataFrame, test_size: float, window_size: int = 5):
     """TODO"""
     dev_x_data = []
     test_x_data = []
     dev_y_data = []
     test_y_data = []
-    for group in df_discharge.groupby("cycle"):
-        cycle_data = group[1].iloc[:, 1:]
-        # print(cycle_data)
-        cycle_data_windows, capacities = windowing(cycle_data, 5, 1)
-        (
-            dev_windows,
-            test_windows,
-            dev_labels,
-            test_labels,
-        ) = sklearn.model_selection.train_test_split(
-            cycle_data_windows, capacities, test_size=test_size
-        )
-        # print(dev_labels.shape)
-        for (dev_x, dev_y) in zip(dev_windows, dev_labels):
-            dev_x_data.append(dev_x)
-            dev_y_data.append(dev_y)
-        for (test_x, test_y) in zip(test_windows, test_labels):
-            test_x_data.append(test_x)
-            test_y_data.append(test_y)
-    dev_x_data, dev_y_data, test_x_data, test_y_data = (
-        np.asarray(dev_x_data),
-        np.asarray(dev_y_data),
-        np.asarray(test_x_data),
-        np.asarray(test_y_data),
-    )
-    return (
-        dev_x_data,
-        dev_y_data[..., np.newaxis],
-        test_x_data,
-        test_y_data[..., np.newaxis],
-    )
+    num_train = int(len(df_discharge.groupby("cycle")) * (1 - test_size))
+    random_list = shuffle(range(len(df_discharge.groupby("cycle"))))
+    # random_list = range(len(df_discharge.groupby("cycle")))
+    dev_index, test_index = random_list[:num_train], random_list[num_train:]
 
-def dev_test_split_2(df_discharge: pd.DataFrame, test_size: float):
-    """TODO"""
-    dev_x_data = []
-    test_x_data = []
-    dev_y_data = []
-    test_y_data = []
-    num_train = int(len(df_discharge.groupby("cycle")) * (1-test_size))
-    current_num_train = 0
     for idx, group in enumerate(df_discharge.groupby("cycle")):
         cycle_data = group[1].iloc[:, 1:]
-        if idx <= num_train:
-            cycle_data_windows, capacities = windowing(cycle_data, 5, 1)
+        if idx in dev_index:
+            cycle_data_windows, capacities = windowing(cycle_data, window_size, 1)
             for (dev_x, dev_y) in zip(cycle_data_windows, capacities):
-                dev_x_data.append(dev_x[:,:-1])
+                dev_x_data.append(dev_x[:, :-1])
                 dev_y_data.append(dev_y)
-            current_num_train += len(cycle_data)
         else:
-            cycle_data = group[1].iloc[:, 1:]
-            cycle_data_windows, capacities = windowing(cycle_data, 5, 1)
+            cycle_data_windows, capacities = windowing(cycle_data, window_size, 1)
             for (test_x, test_y) in zip(cycle_data_windows, capacities):
-                test_x_data.append(test_x[:,:-1])
+                test_x_data.append(test_x[:, :-1])
                 test_y_data.append(test_y)
-        
-    dev_x_data, dev_y_data= (np.asarray(dev_x_data), np.asarray(dev_y_data))
-    test_x_data, test_y_data= (np.asarray(test_x_data), np.asarray(test_y_data))
+
+    dev_x_data, dev_y_data = (np.asarray(dev_x_data), np.asarray(dev_y_data))
+    test_x_data, test_y_data = (np.asarray(test_x_data), np.asarray(test_y_data))
     return (
         dev_x_data,
         dev_y_data[..., np.newaxis],
@@ -79,52 +42,119 @@ def dev_test_split_2(df_discharge: pd.DataFrame, test_size: float):
     )
 
 
-def min_max_transform(dev_x, dev_y, test_x, test_y):
+def dev_test_split_unsupervised(
+    df_discharge: pd.DataFrame, test_size: float, window_size: int = 5, randomize=True
+):
     """TODO"""
-    #min_max_scaler_X = sklearn.preprocessing.MinMaxScaler()
-    #min_max_scaler_y = sklearn.preprocessing.MinMaxScaler()
-    min_max_scaler_X = sklearn.preprocessing.StandardScaler()
-    min_max_scaler_y = sklearn.preprocessing.StandardScaler()
+    num_train = int(len(df_discharge.groupby("cycle")) * (1 - test_size))
+    num_data_per_group = df_discharge.groupby("cycle").count().min().iloc[0]
+    cycle_data = np.zeros(
+        (
+            len(df_discharge.groupby("cycle")),
+            num_data_per_group,
+            len(df_discharge.iloc[0]),
+        )
+    )  # [# of cycles, # of data per cycle, # of features]
+    for idx, group in enumerate(df_discharge.groupby("cycle")):
+        cycle_data[idx] = group[1].iloc[:num_data_per_group]
+    windows = windowing_numpy(cycle_data, window_size, 1)
+
+    if randomize:
+        random_list = shuffle(range(len(windows)))
+    else:
+        random_list = range(len(windows))
+    dev_index, test_index = random_list[:num_train], random_list[num_train:]
+
+    dev_x_data = windows[dev_index]
+    test_x_data = windows[test_index]
+    assert len(dev_x_data) + len(test_x_data) == len(
+        windows
+    ), "# of dev + # of test != # of windows"
+    return dev_x_data, test_x_data
+
+
+def standard_transform_y(dev_y, test_y):
+    """TODO"""
+    standard_scaler_y = sklearn.preprocessing.StandardScaler()
+    dev_y = standard_scaler_y.fit_transform(dev_y)
+    test_y = standard_scaler_y.transform(test_y)
+    return dev_y, test_y, standard_scaler_y
+
+
+def standard_transform_x(dev_x, test_x):
+    """TODO"""
+    standard_scaler_X = sklearn.preprocessing.StandardScaler()
     init_dev_shape = dev_x.shape
     init_test_shape = test_x.shape
-    num_dev_data = init_dev_shape[0]
-    num_test_data = init_test_shape[0]
-    dev_x = min_max_scaler_X.fit_transform(np.reshape(dev_x, (num_dev_data, -1)))
-    dev_x = np.reshape(dev_x, init_dev_shape)
-    test_x = min_max_scaler_X.transform(np.reshape(test_x, (num_test_data, -1)))
-    test_x = np.reshape(test_x, init_test_shape)
 
-    dev_y = min_max_scaler_y.fit_transform(dev_y)
-    test_y = min_max_scaler_y.transform(test_y)
-    return dev_x, dev_y, test_x, test_y, min_max_scaler_X, min_max_scaler_y
+    fit_data = np.concatenate((dev_x[0], dev_x[1:, -1]))
+    standard_scaler_X.fit(np.reshape(fit_data, (-1, init_dev_shape[-1])))
+    dev_x = standard_scaler_X.transform(np.reshape(dev_x, (-1, init_dev_shape[-1])))
+    dev_x = np.reshape(dev_x, (init_dev_shape[0], init_dev_shape[1], -1))
+    test_x = standard_scaler_X.transform(np.reshape(test_x, (-1, init_dev_shape[-1])))
+    test_x = np.reshape(test_x, (init_test_shape[0], init_test_shape[1], -1))
+    return dev_x, test_x, standard_scaler_X
 
 
-def load_data(
-    df_discharge: pd.DataFrame, test_size: float, feature_names: list[str]
+def load_supervised_data(
+    df_discharge: pd.DataFrame,
+    test_size: float,
+    feature_names: list[str],
+    window_size: int = 5,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """TODO"""
     df_feature = df_discharge[feature_names]
-    dev_x, dev_y, test_x, test_y = dev_test_split_2(df_feature, test_size)
-    dev_x, dev_y, test_x, test_y, X_scaler, y_scaler = min_max_transform(
-        dev_x, dev_y, test_x, test_y
+    dev_x, dev_y, test_x, test_y = dev_test_split_supervised(df_feature, test_size, window_size)
+    dev_x, test_x, X_scaler = standard_transform_x(dev_x, test_x)
+    dev_y, test_y, y_scaler = standard_transform_y(dev_y, test_y)
+    return (dev_x, dev_y), (test_x, test_y), X_scaler, y_scaler
+
+
+def load_unsupervised_data(
+    df_discharge: pd.DataFrame,
+    test_size: float,
+    feature_names: list[str],
+    window_size: int = 5,
+    randomize=True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """TODO"""
+    df_feature = df_discharge[feature_names]
+    dev_x_data, test_x_data = dev_test_split_unsupervised(
+        df_feature, test_size, window_size, randomize
     )
-    return dev_x, dev_y, test_x, test_y, X_scaler, y_scaler
+    dev_x_data, test_x_data, X_scaler = standard_transform_x(dev_x_data, test_x_data)
+    dev_y = dev_x_data[:, 1:]  # dev_x_data shape : [# of cycles, 5, 4],
+                               # dev_y shape: [# of cycles, 4, 4] -: cycle 2-5
+    dev_x = dev_x_data[:, :-1] # dev_x_data: [# of cycles, 4, 4] -> the first 4 is cycle 1-4,
+                               # That's why we don't need y_target
+    test_y = test_x_data[:, 1:]
+    test_x = test_x_data[:, :-1]
+    return (dev_x, dev_y), (test_x, test_y), X_scaler
 
 
 def main():
     """TODO"""
     path = "../../data/B0005.csv"
-    df_discharge = get_clean_data(path)
+    df_discharge = get_clean_data(path, int(5e6))
     feature_names = [
         "cycle",
         "voltage_measured",
         "current_measured",
         "temperatrue_measured",
         "capcity_during_discharge",
+        "capacity",
     ]
-    test_size = 0.2
-    dev_x, dev_y, test_x, test_y, _ = load_data(df_discharge, test_size, feature_names)
-    print(dev_x.shape, dev_y.shape, test_x.shape, test_y.shape)
+    test_size = 0.3
+    # (dev_x, dev_y), (test_x, test_y), X_scaler =
+    # load_unsupervised_data(df_discharge, test_size, feature_names)
+    (dev_x, dev_y), (test_x, test_y), X_scaler, y_scaler = load_supervised_data(
+        df_discharge, test_size, feature_names
+    )
+    print("===== dev_x, dev_y =====")
+    print(dev_x.shape, dev_y.shape)
+    print("===== test_x, test_y =====")
+    print(test_x.shape, test_y.shape)
+
 
 if __name__ == "__main__":
     main()

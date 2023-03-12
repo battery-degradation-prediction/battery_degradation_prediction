@@ -1,3 +1,5 @@
+"""Window module"""
+
 import numpy as np
 import pandas as pd
 
@@ -16,7 +18,8 @@ def windowing(data: pd.DataFrame, window_size: int, stride: int):
     """
     if len(data) < window_size + 1:
         print(
-            f"Error: Data array length ({len(data)}) is not long enough to generate windows of size {window_size}."
+            f"Error: Data array length ({len(data)}) is not long enough to \
+              generate windows of size {window_size}."
         )
         return (None, None)
 
@@ -33,7 +36,36 @@ def windowing(data: pd.DataFrame, window_size: int, stride: int):
     return np.array(windows), np.array(labels)
 
 
-if __name__ == "__main__":
+def windowing_numpy(data: np.ndarray, window_size: int, stride: int):
+    """
+    Generate windows and labels from a time series dataset.
+
+    Parameters:
+        data (np.ndarray): The time series data. The label should be the last feature
+        window_size (int): The size of the sliding window.
+        stride (int): The stride of the sliding window.
+
+    Returns:
+        pd.DataFrame
+    """
+    if len(data) < window_size + 1:
+        print(
+            f"Error: Data array length ({len(data)}) is not long enough \
+              to generate windows of size {window_size}."
+        )
+        return (None, None)
+
+    num_windows = int((len(data) - window_size) / stride)
+    windows = []
+    for i in range(num_windows):
+        start_idx = i * stride
+        end_idx = start_idx + window_size
+        windows.append(data[start_idx:end_idx, :, 1:-1])
+    return np.array(windows)
+
+
+def main():
+    """TODO"""
     # Generate some sample time series data
     data = np.arange(100)
     print(data)
@@ -48,3 +80,8 @@ if __name__ == "__main__":
         # Print the first 5 windows and labels
         print("Windows:\n", windows[:])
         print("Labels:\n", labels[:])
+    return 0
+
+
+if __name__ == "__main__":
+    main()

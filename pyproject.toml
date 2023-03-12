@@ -12,6 +12,10 @@ matplotlib = "^3.7.0"
 seaborn = "^0.12.2"
 torch = "^1.13.1"
 scikit-learn = "^1.2.1"
+torchvision = "^0.14.1"
+sudo = "^1.0.0"
+PyQt5 = "^5.15.9"
+imageio = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.15.10"

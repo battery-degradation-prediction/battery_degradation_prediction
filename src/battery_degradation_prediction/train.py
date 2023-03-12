@@ -27,6 +27,7 @@ def get_batch(X, y, batch_size, batch_num):
     return features, targets
 
 
+
 def train(train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, criterion):
     """TODO"""
     num_batches = len(train_x) // batch_size
@@ -69,7 +70,6 @@ def evaluate(model: nn.Module, eval_data: torch.Tensor, targets: torch.Tensor, c
         loss = criterion(output, targets).item()
     return loss
 
-
 def main():
     """TODO"""
     path = "../../data/B0005.csv"
@@ -77,6 +77,7 @@ def main():
     df_discharge = get_clean_data(
         path, int(num_data)
     )  # 10: 11140, 50: 113930, 100:316545, 159: 556018
+
     feature_names = [
         "cycle",
         "voltage_measured",
@@ -94,13 +95,18 @@ def main():
     print(f"test_x = {test_x.shape}, test_y = {test_y.shape}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     print(f"device = {device}")
     dev_x = torch.from_numpy(dev_x).type(torch.float32).to(device)
+    dev_x_labels = torch.from_numpy(dev_x_labels).type(torch.float32).to(device)
     dev_y = torch.from_numpy(dev_y).type(torch.float32).to(device)
     test_x = torch.from_numpy(test_x).type(torch.float32).to(device)
     test_y = torch.from_numpy(test_y).type(torch.float32).to(device)
+    test_x_labels = torch.from_numpy(test_x_labels).type(torch.float32).to(device)
+    print(f"dev_shape = {dev_x.shape}, test_y_shape = {test_y.shape}")
     # Set hyperparameters
     epochs = 25
+
     input_shape = dev_x.shape[1:]
     d_model = 8
     nhead = 2
@@ -109,6 +115,7 @@ def main():
     dropout = 0.2
     batch_size = 64
     num_folds = 5
+
     # Define model
     model = Transformer(input_shape, d_model, nhead, num_layers, output_size, dropout).to(device)
     criterion = nn.MSELoss()
@@ -151,6 +158,7 @@ def main():
     torch.save(model.state_dict(), model_path)
     # model.load_state_dict(torch.load(model_path))
 
+
     # Evaluate
     print("evaluate")
     model.eval()
@@ -180,7 +188,6 @@ def main():
     plot_future_capacities(df_feature, input_shape, model, X_scaler, y_scaler, 
                            future_cycle, window_size)
     """
-
 
 if __name__ == "__main__":
     main()

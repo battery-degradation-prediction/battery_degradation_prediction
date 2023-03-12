@@ -212,14 +212,9 @@ def add_elapsed_time_per_cycle(df: pd.DataFrame) -> list[float]:
 
     time_elapsed_list = []
     for cycle, time_group in df.groupby("cycle")["time"]:
-        if len(time_group) == 0:
-            raise ValueError(f"Cycle {cycle} has no time entries")
-
         start_time = time_group.iloc[0]
         for target_time in time_group:
             time_elapsed = calc_test_time_from_datetime(target_time, start_time)
-            if not isinstance(time_elapsed, float):
-                raise TypeError(f"Elapsed time in cycle {cycle} should be a float")
             time_elapsed_list.append(time_elapsed)
 
     if not time_elapsed_list:
@@ -249,6 +244,7 @@ def remove_jump_voltage(df_discharge: pd.DataFrame) -> pd.DataFrame:
     """
     cummulative_num = 0
     drop_ranges = []
+
     for voltage_group in df_discharge.groupby("cycle")["voltage_measured"]:
         min_voltage_index = np.argmin(voltage_group[1])
         num_group = voltage_group[1].shape[0]
@@ -357,12 +353,14 @@ def plot_remove_jump_voltage(df_discharge):
 
 
 def get_clean_data(path: str, data_num: int = 10000, num_row_per_cycle: int = 100) -> pd.DataFrame:
+
     """
     Convert the csv file from path into clean data
     """
 
     df = pd.read_csv(path)
-    df = df.iloc[:data_num]
+    if df.empty:
+        raise ValueError("Input dataframe is empty")
 
     df["time"] = df["datetime"].apply(convert_datetime_str_to_obj)
     df["elapsed_time"] = df["time"].apply(calc_test_time_from_datetime, args=(df["time"].iloc[0],))

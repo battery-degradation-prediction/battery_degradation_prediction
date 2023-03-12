@@ -34,6 +34,7 @@ class Transformer(nn.Module):
 
         # Define the output layer
         self.fc = nn.Linear(d_model, output_size)
+        self.fc_features = nn.Linear(d_model*input_size[0], input_size[1])
 
     def forward(self, x):
         """forward"""

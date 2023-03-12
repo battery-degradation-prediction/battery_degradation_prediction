@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from battery_degradation_prediction.interpolate import spine_interpolate
+from battery_degradation_prediction.interpolate import spline_interpolate
 
 
 # func to convert datetimes in dataframe to time objects    WORKS
@@ -387,7 +387,11 @@ def get_clean_data(path: str, data_num: int = 10000, num_row_per_cycle: int = 10
         "capcity_during_discharge",
         "capacity",
     ]
-    df_discharge = spine_interpolate(df_discharge, spline_columns, num_row_per_cycle)
+    print("===== Before spline =====")
+    print(df_discharge)
+    df_discharge = spline_interpolate(df_discharge, spline_columns, num_row_per_cycle)
+    print("===== After spline =====")
+    print(df_discharge)
     return df_discharge
 
 
@@ -408,8 +412,8 @@ def main():
     """TODO"""
     data_path = "../../data/B0005.csv"
     df = get_clean_data(data_path)
-    print(df)
-    print(df.columns)
+    #print(df)
+    #print(df.columns)
     """
     for i in range(1, 8):
         capacity_final = df_discharge[df_discharge["cycle"] == i][

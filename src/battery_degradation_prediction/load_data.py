@@ -123,8 +123,10 @@ def load_unsupervised_data(
         df_feature, test_size, window_size, randomize
     )
     dev_x_data, test_x_data, X_scaler = standard_transform_x(dev_x_data, test_x_data)
-    dev_y = dev_x_data[:, 1:]
-    dev_x = dev_x_data[:, :-1]
+    dev_y = dev_x_data[:, 1:]  # dev_x_data shape : [# of cycles, 5, 4],
+                               # dev_y shape: [# of cycles, 4, 4] -: cycle 2-5
+    dev_x = dev_x_data[:, :-1] # dev_x_data: [# of cycles, 4, 4] -> the first 4 is cycle 1-4,
+                               # That's why we don't need y_target
     test_y = test_x_data[:, 1:]
     test_x = test_x_data[:, :-1]
     return (dev_x, dev_y), (test_x, test_y), X_scaler

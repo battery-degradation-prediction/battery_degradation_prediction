@@ -1,12 +1,10 @@
 """spline module"""
 import pandas as pd
 import numpy as np
-
 from scipy.interpolate import CubicSpline
 
-# features_list = ['temperature_measured', 'voltage_measured',
-# 'current_measured', 'capacity']
-def spine_interpolate(dataframe, features_list, num_row: int = 100) -> pd.DataFrame:
+# features_list = ['temperature_measured', 'voltage_measured','current_measured', 'capacity']
+def spline_interpolate(dataframe, features_list, num_row: int=100) -> pd.DataFrame:
     """
     Spine interpolate in a discharge dataframe using cubic spline interpolation.
 
@@ -34,7 +32,8 @@ def spine_interpolate(dataframe, features_list, num_row: int = 100) -> pd.DataFr
             y_discharge = cycle[feature]
             y_try = y_discharge.to_numpy()
             x_try = x_discharge.to_numpy()
-            cs = CubicSpline(x_try, y_try)
+            cs = CubicSpline(x_try, y_try)  # return the function f(x):
+                                            # f(x) = ax^3 + bx^2 + cx + d
             cs_list = cs(time_x)
             df_feature = pd.DataFrame(cs_list, columns=[feature])
             df_features.append(df_feature)

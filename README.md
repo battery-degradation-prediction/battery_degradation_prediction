@@ -4,7 +4,6 @@
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
-
 # **Forcasting Battery Discharge Capacity Fade**
 by Po-Hao Chiu, Anthony Romero, Yi-Shan Lee, Julia Goldblatt
 
@@ -16,35 +15,35 @@ While secondary batteries are capable of achieving desirably high energy and pow
 ## **Getting Started**
 ***
 ### How to clone this repository to your local computer 
- 1. Open a terminal, and change the current working directory to the desired path you would like to clone our repository to. 
+ 1. Open a terminal and change the current working directory to the desired path you would like to clone our repository to. 
 
 ```
 $ cd Desired_Path
 ```
-A hypotheical path is provided below for demenstraive purposes, wherein we first create a new directory using `mkdir`, called "Battery_Degredation_Prediction". Next we change to that directroy using `cd` followed by the directory name. Finally, we then print the working directory path using `pwd` (*then  hit enter*) to confirm our desired location:
+A hypothetical path is provided below for demonstrative purposes, wherein we first create a new directory using `mkdir`, called "Battery_Degradation_Prediction". Next we change to that directory using `cd` followed by the directory name. Finally, we then print the working directory path using `pwd` (*then hit enter*) to confirm our desired location:
 
 ```
-$ mkdir Battery_Degredation_Prediction
+$ mkdir Battery_Degradation_Prediction
 ```
 ```
-$ cd Battery_Degredation_Prediction
+$ cd Battery_Degradation_Prediction
 ```
 ```
 $ pwd
-/home/username/Battery_Degredation_Prediction
+/home/username/Battery_Degradation_Prediction
 ```
 
  2. Now in your desired path, copy and paste the following code below into your command line, and press enter. 
  ```
  $ git clone https://github.com/battery-degradation-prediction/battery_degradation_prediction.git
  ```
-3. Success! You have sucessfully cloned the current versions repository to your local computer.
+3. Success! You have successfully cloned the current versions repository to your local computer.
 ***
 ## **Requirements to run**
 ***
 ### Install and Run Poetry
 
-Poetry **<- link** is a python tool for mananging package dependencies in python, and we utlaize this tool to create a virtual enviroment (containing all required packages) to run our model. Therefore we need to install and run poetry.
+Poetry **<- link** is a python tool for managing package dependencies in python, and we utilize this tool to create a virtual environment (containing all required packages) to run our model. Therefore, you need to install and run poetry for the model to work.
 
 #### Installing Poetry
 
@@ -54,7 +53,7 @@ $ curl -sSL https://install.python-poetry.org | python3 -
 ```
 #### Running Poetry
 
-Once installed, in order to activate the virtual enviroment, enter the following code in the command line, and press enter.
+Once installed, in order to activate the virtual environment, enter the following code in the command line, and press enter.
 ```
 $ poetry shell
 ```
@@ -65,7 +64,7 @@ once executed, you will see a new "path" appear at the start of your command lin
 
 __Now you are ready to run the model!!__
 
-*Note:* When finsihed, type `exit` in the command line, and hit enter. This will exit poetry's shell (i.e., the vitural enviroment).
+*Note:* When finished, type `exit` in the command line, and hit enter. This will exit poetry's shell (i.e., the virtual environment).
 ```
 $ exit
 ```
@@ -81,6 +80,8 @@ In future versions, you will have the capability to input your own cycling data 
 ### Converting .mat files to .csv
 
 ### Where to place converted .csv files in repository 
+
+
 
 
 

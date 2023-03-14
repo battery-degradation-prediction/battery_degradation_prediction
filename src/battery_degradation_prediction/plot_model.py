@@ -36,7 +36,9 @@ def parity_plot(test_y, predictions):
     _, ax = plt.subplots(figsize=(5, 5))
     r2 = r2_score(test_y, predictions)
 
-    ax.scatter(test_y, predictions, s=6, facecolors="none", edgecolors="k", label="Transformer")
+    ax.scatter(
+        test_y, predictions, s=6, facecolors="none", edgecolors="k", label="Transformer"
+    )
     ax.plot([-100, 100], [-100, 100], "--k", label="Perfect predictions")
     ax.set_title("Predicted capacity")
     ax.set_xlabel("Ground truth")

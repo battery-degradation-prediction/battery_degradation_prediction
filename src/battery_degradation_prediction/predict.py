@@ -42,7 +42,9 @@ def predict(supervised_model, unsupervised_model, cycle_window, future_cycle=10)
     num_features = 4
     window_size = 5
     x_pred = x_pred.cpu()[0, 0].view(num_rows, num_features).detach().numpy()
-    x_windows = get_window(x_pred, window_size, 1)  # [# of windows, window_size, num_features]
+    x_windows = get_window(
+        x_pred, window_size, 1
+    )  # [# of windows, window_size, num_features]
     x_windows = torch.from_numpy(x_windows).type(torch.float32).to(device)
 
     pred = supervised_model(x_windows)
@@ -81,7 +83,9 @@ def main():
     dropout = 0.2
     latent_size = 10
     model_hyper = (input_shape, d_model, nhead, num_layers, latent_size, dropout)
-    unsupervised_model = load_model(TransformerReduction, unsupervised_model_path, model_hyper)
+    unsupervised_model = load_model(
+        TransformerReduction, unsupervised_model_path, model_hyper
+    )
 
     data_path = "../../data/B0005.csv"
     df_discharge = get_clean_data(data_path, int(1e7))
@@ -109,14 +113,18 @@ def main():
     for future_cycle in future_cycles:
         cycle_data = get_cycle_data(df_discharge, future_cycle)
         true = cycle_data[["voltage_measured", "capcity_during_discharge"]]
-        x_windows, pred = predict(supervised_model, unsupervised_model, dev_x[:1], future_cycle)
+        x_windows, pred = predict(
+            supervised_model, unsupervised_model, dev_x[:1], future_cycle
+        )
         x_windows_shape = x_windows.shape
         pred_inv = y_scaler.inverse_transform(pred)
-        x_windows_inv = X_scaler.inverse_transform(x_windows.reshape(-1, num_features)).reshape(
-            x_windows_shape
-        )
+        x_windows_inv = X_scaler.inverse_transform(
+            x_windows.reshape(-1, num_features)
+        ).reshape(x_windows_shape)
         capacity_pred = np.concatenate((x_windows_inv[0, :, -1], pred_inv[:-1, 0]))
-        voltage_pred = np.concatenate((x_windows_inv[:-1, 0, 0], x_windows_inv[-1, :, 0]))
+        voltage_pred = np.concatenate(
+            (x_windows_inv[:-1, 0, 0], x_windows_inv[-1, :, 0])
+        )
         capacity_true = true["capcity_during_discharge"]
         voltage_true = true["voltage_measured"]
         fig, ax = plt.subplots(figsize=(5, 5))

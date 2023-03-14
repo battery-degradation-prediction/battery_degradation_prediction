@@ -27,7 +27,9 @@ def get_batch(X, y, batch_size, batch_num):
     return features, targets
 
 
-def train(train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, criterion):
+def train(
+    train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, criterion
+):
     """TODO"""
     num_batches = len(train_x) // batch_size
     history = {}
@@ -46,7 +48,9 @@ def train(train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, 
             optimizer.step()  # Does the update
             if batch % 20 == 0:
                 print(f"Batch {batch+1}/{num_batches} | loss = {loss:2.5f}")
-        history.setdefault("train_loss", []).append((loss_sum / num_batches).cpu().detach().numpy())
+        history.setdefault("train_loss", []).append(
+            (loss_sum / num_batches).cpu().detach().numpy()
+        )
         val_loss = val_eval(val_x, val_y, model, criterion)
         print(f"Epoch = {epoch} | val_loss = {val_loss:2.5f}")
         history.setdefault("val_loss", []).append(val_loss.cpu().detach().numpy())
@@ -61,7 +65,9 @@ def val_eval(val_x, val_y, model, criterion):
     return val_loss
 
 
-def evaluate(model: nn.Module, eval_data: torch.Tensor, targets: torch.Tensor, criterion) -> float:
+def evaluate(
+    model: nn.Module, eval_data: torch.Tensor, targets: torch.Tensor, criterion
+) -> float:
     """TODO"""
     model.eval()  # turn on evaluation mode
     with torch.no_grad():
@@ -110,7 +116,9 @@ def main():
     batch_size = 64
     num_folds = 5
     # Define model
-    model = Transformer(input_shape, d_model, nhead, num_layers, output_size, dropout).to(device)
+    model = Transformer(
+        input_shape, d_model, nhead, num_layers, output_size, dropout
+    ).to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters())
 
@@ -141,7 +149,9 @@ def main():
 
         plot_train_val_loss(histories)
 
-    model = Transformer(input_shape, d_model, nhead, num_layers, output_size, dropout).to(device)
+    model = Transformer(
+        input_shape, d_model, nhead, num_layers, output_size, dropout
+    ).to(device)
     optimizer = optim.Adam(model.parameters())
     model, history = train(
         dev_x, dev_y, dev_x, dev_y, model, epochs, batch_size, optimizer, criterion

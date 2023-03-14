@@ -134,7 +134,9 @@ def train(X_train, y_train, model, epochs, optimizer, criterion):
         optimizer.step()  # Does the update
         if epoch % 10 == 0:
             _, predicted = torch.max(outputs, 1)
-            accuracy = calculate_accuracy(predicted.detach().numpy(), train_labels.detach().numpy())
+            accuracy = calculate_accuracy(
+                predicted.detach().numpy(), train_labels.detach().numpy()
+            )
             print(f"Epoch = {epoch}, loss = {loss:2.5f}, accuracy = {accuracy:1.5f}")
     return model
 
@@ -154,7 +156,9 @@ def test(X_test, model, test_labels, classes):
         if classes[pred_test] == "same":
             print(f"({test_labels[idx]==pred_test}): Input:{decimal}, Output:{decimal}")
         else:
-            print(f"({test_labels[idx]==pred_test}): Input:{decimal}, Output:{classes[pred_test]}")
+            print(
+                f"({test_labels[idx]==pred_test}): Input:{decimal}, Output:{classes[pred_test]}"
+            )
     print(f"Test accuracy = {test_acc}")
     return test_acc
 

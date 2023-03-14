@@ -29,8 +29,12 @@ class Transformer(nn.Module):
         self.pos_encoder = nn.Sequential(nn.Linear(input_size[1], d_model), nn.Tanh())
 
         # Define the transformer encoder layer
-        encoder_layers = TransformerEncoderLayer(d_model=d_model, nhead=nhead, dropout=dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers=num_layers)
+        encoder_layers = TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead, dropout=dropout
+        )
+        self.transformer_encoder = TransformerEncoder(
+            encoder_layers, num_layers=num_layers
+        )
 
         # Define the output layer
         self.fc = nn.Linear(d_model, output_size)
@@ -56,7 +60,9 @@ class Transformer(nn.Module):
 class TransformerReduction(nn.Module):
     """Transformer to reduce dimension"""
 
-    def __init__(self, input_size, d_model, nhead, num_layers, latent_size, dropout=0.1):
+    def __init__(
+        self, input_size, d_model, nhead, num_layers, latent_size, dropout=0.1
+    ):
         super().__init__()
         self.input_size = input_size
         self.d_model = d_model
@@ -68,12 +74,18 @@ class TransformerReduction(nn.Module):
         self.pos_encoder = nn.Sequential(nn.Linear(input_size[1], d_model), nn.Tanh())
 
         # Define the transformer encoder layer
-        encoder_layers = TransformerEncoderLayer(d_model=d_model, nhead=nhead, dropout=dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers=num_layers)
+        encoder_layers = TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead, dropout=dropout
+        )
+        self.transformer_encoder = TransformerEncoder(
+            encoder_layers, num_layers=num_layers
+        )
 
         # Define the output layer
         self.fc_to_latent = nn.Linear(d_model * input_size[0], latent_size)
-        self.fc_latent_to_original = nn.Linear(latent_size, input_size[0] * input_size[1])
+        self.fc_latent_to_original = nn.Linear(
+            latent_size, input_size[0] * input_size[1]
+        )
 
     def forward(self, x):
         """forward"""

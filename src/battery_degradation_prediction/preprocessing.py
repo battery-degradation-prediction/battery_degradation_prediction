@@ -107,7 +107,9 @@ def remove_unwanted_current(dataframe, column, small, large):
         The dataframe with a clean column.
     """
     # Select values in column that are outside of the specified range
-    dataframe[column] = dataframe[column][(dataframe[column] < small) | (dataframe[column] > large)]
+    dataframe[column] = dataframe[column][
+        (dataframe[column] < small) | (dataframe[column] > large)
+    ]
 
     # Return filtered DataFrame column
     return dataframe
@@ -258,7 +260,9 @@ def remove_jump_voltage(df_discharge: pd.DataFrame) -> pd.DataFrame:
                     Provide entire cycle's voltage"
             )
         if min_voltage_index == 0:
-            raise ValueError(f"Discharge cycle {voltage_group[0]} starts with a voltage minimum")
+            raise ValueError(
+                f"Discharge cycle {voltage_group[0]} starts with a voltage minimum"
+            )
         drop_ranges.append(
             range(cummulative_num + min_voltage_index + 1, cummulative_num + num_group)
         )
@@ -288,7 +292,8 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
     if df_discharge.empty:
         raise ValueError("Input dataframe is empty")
     if not all(
-        col in df_discharge.columns for col in ["elapsed_time_per_cycle", "current_measured"]
+        col in df_discharge.columns
+        for col in ["elapsed_time_per_cycle", "current_measured"]
     ):
         raise ValueError(
             "Input dataframe does not contain \
@@ -298,7 +303,10 @@ def calc_capacity_during_discharge(df_discharge: pd.DataFrame) -> list[float]:
     capcity_during_discharge_list = []
     for i in range(len(df_discharge)):
         capcity_during_discharge_list.append(
-            abs(df_discharge["elapsed_time_per_cycle"][i] * df_discharge["current_measured"][i])
+            abs(
+                df_discharge["elapsed_time_per_cycle"][i]
+                * df_discharge["current_measured"][i]
+            )
         )
     if not capcity_during_discharge_list:
         raise ValueError("Returned capacity during discharge list is empty")
@@ -338,7 +346,10 @@ def capacity_during_discharge(df_discharge):
     capcity_during_discharge_list = []
     for i in range(len(df_discharge)):
         capcity_during_discharge_list.append(
-            abs(df_discharge["elapsed_time_per_cycle"][i] * df_discharge["current_measured"][i])
+            abs(
+                df_discharge["elapsed_time_per_cycle"][i]
+                * df_discharge["current_measured"][i]
+            )
         )
     df_discharge["capcity_during_discharge"] = capcity_during_discharge_list
     return
@@ -347,16 +358,22 @@ def capacity_during_discharge(df_discharge):
 def plot_remove_jump_voltage(df_discharge):
     """TODO"""
     _, ax = plt.subplots(1, 2, figsize=(18, 5))
-    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0])
+    sns.scatterplot(
+        data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0]
+    )
     remove_jump_voltage(df_discharge)
-    sns.scatterplot(data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[1])
+    sns.scatterplot(
+        data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[1]
+    )
     ax[0].set_title("Raw voltage data")
     ax[1].set_title("Remove jump voltage")
     plt.show()
     return
 
 
-def get_clean_data(path: str, data_num: int = 10000, num_row_per_cycle: int = 100) -> pd.DataFrame:
+def get_clean_data(
+    path: str, data_num: int = 10000, num_row_per_cycle: int = 100
+) -> pd.DataFrame:
     """
     Convert the csv file from path into clean data
     """
@@ -365,11 +382,15 @@ def get_clean_data(path: str, data_num: int = 10000, num_row_per_cycle: int = 10
     df = df.iloc[:data_num]
 
     df["time"] = df["datetime"].apply(convert_datetime_str_to_obj)
-    df["elapsed_time"] = df["time"].apply(calc_test_time_from_datetime, args=(df["time"].iloc[0],))
+    df["elapsed_time"] = df["time"].apply(
+        calc_test_time_from_datetime, args=(df["time"].iloc[0],)
+    )
     df_discharge = isolate_discharge_cyc_data(df)
 
     time_elasped_list = add_elapsed_time_per_cycle(df_discharge)
-    df_discharge.insert(len(df_discharge.columns), "elapsed_time_per_cycle", time_elasped_list)
+    df_discharge.insert(
+        len(df_discharge.columns), "elapsed_time_per_cycle", time_elasped_list
+    )
     df_discharge.reset_index(drop=True, inplace=True)
     capcity_during_discharge = calc_capacity_during_discharge(df_discharge)
     df_discharge.insert(
@@ -408,8 +429,8 @@ def main():
     """TODO"""
     data_path = "../../data/B0005.csv"
     df = get_clean_data(data_path)
-    #print(df)
-    #print(df.columns)
+    # print(df)
+    # print(df.columns)
     """
     for i in range(1, 8):
         capacity_final = df_discharge[df_discharge["cycle"] == i][

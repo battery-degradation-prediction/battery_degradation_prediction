@@ -20,7 +20,9 @@ def get_batch(X, y, batch_size, batch_num):
     return features, targets
 
 
-def train(train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, criterion):
+def train(
+    train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, criterion
+):
     """TODO"""
     num_batches = len(train_x) // batch_size
     history = {}
@@ -38,7 +40,9 @@ def train(train_x, train_y, val_x, val_y, model, epochs, batch_size, optimizer, 
             optimizer.step()  # Does the update
             if batch % 20 == 0:
                 print(f"Batch {batch+1}/{num_batches} | loss = {loss:2.5f}")
-        history.setdefault("train_loss", []).append((loss_sum / num_batches).cpu().detach().numpy())
+        history.setdefault("train_loss", []).append(
+            (loss_sum / num_batches).cpu().detach().numpy()
+        )
         val_loss = val_eval(val_x, val_y, model, criterion)
         print(f"Epoch = {epoch} | val_loss = {val_loss:2.5f}")
         history.setdefault("val_loss", []).append(val_loss.cpu().detach().numpy())
@@ -53,7 +57,9 @@ def val_eval(val_x, val_y, model, criterion):
     return val_loss
 
 
-def evaluate(model: nn.Module, eval_data: torch.Tensor, targets: torch.Tensor, criterion) -> float:
+def evaluate(
+    model: nn.Module, eval_data: torch.Tensor, targets: torch.Tensor, criterion
+) -> float:
     """TODO"""
     model.eval()  # turn on evaluation mode
     with torch.no_grad():
@@ -88,7 +94,9 @@ def main():
     dev_y = torch.from_numpy(dev_y).type(torch.float32).to(device)
     test_x = torch.from_numpy(test_x).type(torch.float32).to(device)
     test_y = torch.from_numpy(test_y).type(torch.float32).to(device)
-    assert not (torch.isnan(dev_x).any() or torch.isnan(dev_y).any()), "Input X contains nan"
+    assert not (
+        torch.isnan(dev_x).any() or torch.isnan(dev_y).any()
+    ), "Input X contains nan"
 
     # Set hyperparameters
     epochs = 0
@@ -102,9 +110,9 @@ def main():
     num_folds = 5
 
     # Define model
-    model = TransformerReduction(input_shape, d_model, nhead, num_layers, latent_size, dropout).to(
-        device
-    )
+    model = TransformerReduction(
+        input_shape, d_model, nhead, num_layers, latent_size, dropout
+    ).to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters())
 
@@ -135,9 +143,9 @@ def main():
         plot_train_val_loss(histories)
 
     model_path = "./unsupervised_model"
-    model = TransformerReduction(input_shape, d_model, nhead, num_layers, latent_size, dropout).to(
-        device
-    )
+    model = TransformerReduction(
+        input_shape, d_model, nhead, num_layers, latent_size, dropout
+    ).to(device)
     optimizer = optim.Adam(model.parameters())
     model, history = train(
         dev_x, dev_y, dev_x, dev_y, model, epochs, batch_size, optimizer, criterion
@@ -165,7 +173,7 @@ def main():
     future = 5
     for idx, future_cycle in enumerate(range(5, 131, 20)):
         first_window = dev_x[future_cycle - 5 : future_cycle - 4]
-        
+
         x_pred = inference(model, future, first_window)
         if len(dev_y[future_cycle + 1 : future_cycle + 2]):
             (
@@ -231,7 +239,9 @@ def get_voltage_capacity(model, X, X_scaler, y, num_features):
 
     dev_inv = y.cpu().detach().numpy()
     dev_inv = X_scaler.inverse_transform(dev_inv.reshape(-1, num_features))
-    dev_y_features = np.reshape(dev_inv, (init_shape[0], init_shape[1], -1, num_features))
+    dev_y_features = np.reshape(
+        dev_inv, (init_shape[0], init_shape[1], -1, num_features)
+    )
     capacity_overtime = dev_y_features[:, -1, :, -1]
     voltage_overtime = dev_y_features[:, -1, :, 0]
     return (
@@ -254,7 +264,9 @@ def draw_voltage_capacity(model, X, X_scaler, y, num_features):
 
     dev_inv = y.cpu().detach().numpy()
     dev_inv = X_scaler.inverse_transform(dev_inv.reshape(-1, num_features))
-    dev_y_features = np.reshape(dev_inv, (init_shape[0], init_shape[1], -1, num_features))
+    dev_y_features = np.reshape(
+        dev_inv, (init_shape[0], init_shape[1], -1, num_features)
+    )
     capacity_overtime = dev_y_features[:, -1, :, -1]
     voltage_overtime = dev_y_features[:, -1, :, 0]
 
@@ -268,7 +280,9 @@ def draw_voltage_capacity(model, X, X_scaler, y, num_features):
             facecolors="none",
             edgecolors="k",
         )
-        ax.plot(capacity_overtime[cycle_num], voltage_overtime[cycle_num], "--k", label="GT")
+        ax.plot(
+            capacity_overtime[cycle_num], voltage_overtime[cycle_num], "--k", label="GT"
+        )
     plt.xlabel("capacity")
     plt.ylabel("voltage")
     plt.legend()

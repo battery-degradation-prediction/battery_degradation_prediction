@@ -8,7 +8,9 @@ from battery_degradation_prediction.preprocessing import get_clean_data
 from battery_degradation_prediction.window import windowing, windowing_numpy
 
 
-def dev_test_split_supervised(df_discharge: pd.DataFrame, test_size: float, window_size: int = 5):
+def dev_test_split_supervised(
+    df_discharge: pd.DataFrame, test_size: float, window_size: int = 5
+):
     """TODO"""
     dev_x_data = []
     test_x_data = []
@@ -104,7 +106,9 @@ def load_supervised_data(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """TODO"""
     df_feature = df_discharge[feature_names]
-    dev_x, dev_y, test_x, test_y = dev_test_split_supervised(df_feature, test_size, window_size)
+    dev_x, dev_y, test_x, test_y = dev_test_split_supervised(
+        df_feature, test_size, window_size
+    )
     dev_x, test_x, X_scaler = standard_transform_x(dev_x, test_x)
     dev_y, test_y, y_scaler = standard_transform_y(dev_y, test_y)
     return (dev_x, dev_y), (test_x, test_y), X_scaler, y_scaler
@@ -124,9 +128,11 @@ def load_unsupervised_data(
     )
     dev_x_data, test_x_data, X_scaler = standard_transform_x(dev_x_data, test_x_data)
     dev_y = dev_x_data[:, 1:]  # dev_x_data shape : [# of cycles, 5, 4],
-                               # dev_y shape: [# of cycles, 4, 4] -: cycle 2-5
-    dev_x = dev_x_data[:, :-1] # dev_x_data: [# of cycles, 4, 4] -> the first 4 is cycle 1-4,
-                               # That's why we don't need y_target
+    # dev_y shape: [# of cycles, 4, 4] -: cycle 2-5
+    dev_x = dev_x_data[
+        :, :-1
+    ]  # dev_x_data: [# of cycles, 4, 4] -> the first 4 is cycle 1-4,
+    # That's why we don't need y_target
     test_y = test_x_data[:, 1:]
     test_x = test_x_data[:, :-1]
     return (dev_x, dev_y), (test_x, test_y), X_scaler

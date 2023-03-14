@@ -16,6 +16,8 @@ torchvision = "^0.14.1"
 sudo = "^1.0.0"
 PyQt5 = "^5.15.9"
 imageio = "^2.26.0"
+jupyterlab = "^3.6.1"
+notebook = "^6.5.3"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.15.10"

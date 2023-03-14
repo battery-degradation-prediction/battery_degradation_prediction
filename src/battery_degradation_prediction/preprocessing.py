@@ -387,11 +387,7 @@ def get_clean_data(path: str, data_num: int = 10000, num_row_per_cycle: int = 10
         "capcity_during_discharge",
         "capacity",
     ]
-    print("===== Before spline =====")
-    print(df_discharge)
     df_discharge = spline_interpolate(df_discharge, spline_columns, num_row_per_cycle)
-    print("===== After spline =====")
-    print(df_discharge)
     return df_discharge
 
 

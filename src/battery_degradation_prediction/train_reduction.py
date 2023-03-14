@@ -162,9 +162,10 @@ def main():
     _, ax = plt.subplots(figsize=(8, 8))
     first_window = dev_x[:1]
     markers = ["^", "X", "<", ">", "o", "*", "v"]
+    future = 5
     for idx, future_cycle in enumerate(range(5, 131, 20)):
         first_window = dev_x[future_cycle - 5 : future_cycle - 4]
-        future = 5
+        
         x_pred = inference(model, future, first_window)
         if len(dev_y[future_cycle + 1 : future_cycle + 2]):
             (

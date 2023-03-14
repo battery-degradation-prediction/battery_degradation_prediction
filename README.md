@@ -3,31 +3,82 @@
 [![Lint Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/lint/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction/actions?query=workflow%3Alint)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+BattDegery
 
-
-# BattDegery: Forcasting Battery Discharge Capacity Fade
+# **Forcasting Battery Discharge Capacity Fade**
 by Po-Hao Chiu, Anthony Romero, Yi-Shan Lee, Julia Goldblatt
 
-## Introduction
-From the aerospace industry, to the automotive industry, to the electrical grid - industries around the world are beginning to transition away from fossil fuels and shift towards greener sources of energy production (e.g., solar, wind, hydro) and utilization. However, in order to effectively distribute/utilize said clean energy for everyday applications, they must be paired with a reliable storage technology, such as secondary (i.e., rechargeable) batteries.
+## **Introduction**
+<font size = 3>From the aerospace industry, to the automotive industry, to the electrical grid - industries around the world are beginning to transition away from fossil fuels and shift towards greener sources of energy production (e.g., solar, wind, hydro) and utilization. However, in order to effectively distribute/utilize said clean energy for everyday applications, they must be paired with a reliable storage technology, such as secondary (i.e., rechargeable) batteries.
 
-While secondary batteries are capable of achieving desirably high energy and power densities needed for various applications, their lifetime is limited. Over time/use, a batteries capacity degrades. Within the literature, there exists a handful of studies dedicated towards furthering our understanding of battery degradation - however to date, no one has accurately been able to forecast/predict the long term lifetime of a battery given only limited cycling data. If achievable, this would radically improve the quality of life for battery manufacturers and consumer, as well as provide more reliable estimates as to when maintenance will be needed for given battery powered application. Herein, we propose the following models to accurately predict a given batteries future cycle discharge capacity, given only initial/limited cycling data.
+While secondary batteries are capable of achieving desirably high energy and power densities needed for various applications, their lifetime is limited. Over time/use, a batteries capacity degrades. ***Within the literature, there exists a handful of studies dedicated towards furthering our understanding of battery degradation - however to date, no one has accurately been able to forecast/predict the long term "lifetime" of a battery given only limited cycling data.*** If achievable, this would radically improve not only the quality of life for battery manufacturers and consumers, but also provide more reliable estimates as to when maintenance will be needed for given battery powered applications. **Herein, we propose the following models to accurately predict a given batteries future cycle discharge capacity, given only initial/limited cycling data.**
+***
+## **Getting Started**
+***
+### How to clone this repository to your local computer 
+ 1. Open a terminal, and change the current working directory to the desired path you would like to clone our repository to. 
 
+```
+$ cd Desired_Path
+```
+A hypotheical path is provided below for demenstraive purposes, wherein we first create a new directory using `mkdir`, called "Battery_Degredation_Prediction". Next we change to that directroy using `cd` followed by the directory name. Finally, we then print the working directory path using `pwd` (*then  hit enter*) to confirm our desired location:
 
-## How to clone this repository to your local computer 
+```
+$ mkdir Battery_Degredation_Prediction
+```
+```
+$ cd Battery_Degredation_Prediction
+```
+```
+$ pwd
+/home/username/Battery_Degredation_Prediction
+```
 
-## Requirements to run
-
+ 2. Now in your desired path, copy and paste the following code below into your command line, and press enter. 
+ ```
+ $ git clone https://github.com/battery-degradation-prediction/battery_degradation_prediction.git
+ ```
+3. Success! You have sucessfully cloned the current versions repository to your local computer.
+***
+## **Requirements to run**
+***
 ### Install and Run Poetry
 
-### Downloading NASA Li-ion Battery Aging Dataset(s) .mat files to .csv
+Poetry **<- link** is a python tool for mananging package dependencies in python, and we utlaize this tool to create a virtual enviroment (containing all required packages) to run our model. Therefore we need to install and run poetry.
+
+#### Installing Poetry
+
+One can install Poetry from the command line by copying the following code below into your terminal, and press enter.
+```
+$ curl -sSL https://install.python-poetry.org | python3 -
+```
+#### Running Poetry
+
+Once installed, in order to activate the virtual enviroment, enter the following code in the command line, and press enter.
+```
+$ poetry shell
+```
+once executed, you will see a new "path" appear at the start of your command line, that should look identical to whats shown below:
+```
+(battery-degradation-prediction-py3.10)
+```
+
+__Now you are ready to run the model!!__
+
+*Note:* When finsihed, type `exit` in the command line, and hit enter. This will exit poetry's shell (i.e., the vitural enviroment).
+```
+$ exit
+```
+
+### Downloading NASA Li-ion Battery Aging Dataset(s) .mat files
 To download the dataset used to train and test our models, visit the link here: **link**. 
 
 *Note, our architecture was designed to be tested on Battery's with a constant current (CC) discharge (i.e., battery #'s 005, 006, 007, 008, 033, 034,and 036) - and is not currently equipped to handle other loading profiles.*
 
 In future versions, you will have the capability to input your own cycling data from common battery cyclers such as Arbin and MACCOR, wherein our software will compile all batteries data into one large dataset, and proceed to train/test the model. 
+### Converting .mat files to .csv
 
-While
+
 
 where is data going
 - notebook exmaple for more clarity

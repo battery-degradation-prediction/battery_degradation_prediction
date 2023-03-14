@@ -3,6 +3,77 @@
 [![Lint Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/lint/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction/actions?query=workflow%3Alint)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+
+
+# BattDegery: Forcasting Battery Discharge Capacity Fade
+by Po-Hao Chiu, Anthony Romero, Yi-Shan Lee, Julia Goldblatt
+
+## Introduction
+
+
+## How to clone this repository to your local computer 
+
+## Requirements to run
+
+### Install and Run Poetry
+
+### Downloading NASA Li-ion Battery Aging Dataset(s) .mat files to .csv
+To download the dataset used to train and test our models, visit the link here: **link**. 
+
+*Note, our architecture was designed to be tested on Battery's with a constant current (CC) discharge (i.e., battery #'s 005, 006, 007, 008, 033, 034,and 036) - and is not currently equipped to handle other loading profiles.*
+
+In future versions, you will have the capability to input your own cycling data from common battery cyclers such as Arbin and MACCOR, wherein our software will compile all batteries data into one large dataset, and proceed to train/test the model. 
+
+While
+
+where is data going
+- notebook exmaple for more clarity
+
+
+## How to run the model
+
+### Where to place converted .csv files in repository 
+
+### Visulziaing data before and after preprocessing 
+ - notebook examples of what is how to 
+
+### 
+
+### 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # User Stories
 new coverage
 ### Informed Consumer

@@ -3,6 +3,80 @@
 [![Lint Status](https://github.com/battery-degradation-prediction/battery_degradation_prediction/workflows/lint/badge.svg)](https://github.com/battery-degradation-prediction/battery_degradation_prediction/actions?query=workflow%3Alint)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+
+
+# BattDegery: Forcasting Battery Discharge Capacity Fade
+by Po-Hao Chiu, Anthony Romero, Yi-Shan Lee, Julia Goldblatt
+
+## Introduction
+From the aerospace industry, to the automotive industry, to the electrical grid - industries around the world are beginning to transition away from fossil fuels and shift towards greener sources of energy production (e.g., solar, wind, hydro) and utilization. However, in order to effectively distribute/utilize said clean energy for everyday applications, they must be paired with a reliable storage technology, such as secondary (i.e., rechargeable) batteries.
+
+While secondary batteries are capable of achieving desirably high energy and power densities needed for various applications, their lifetime is limited. Over time/use, a batteries capacity degrades. Within the literature, there exists a handful of studies dedicated towards furthering our understanding of battery degradation - however to date, no one has accurately been able to forecast/predict the long term lifetime of a battery given only limited cycling data. If achievable, this would radically improve the quality of life for battery manufacturers and consumer, as well as provide more reliable estimates as to when maintenance will be needed for given battery powered application. Herein, we propose the following models to accurately predict a given batteries future cycle discharge capacity, given only initial/limited cycling data.
+
+
+## How to clone this repository to your local computer 
+
+## Requirements to run
+
+### Install and Run Poetry
+
+### Downloading NASA Li-ion Battery Aging Dataset(s) .mat files to .csv
+To download the dataset used to train and test our models, visit the link here: **link**. 
+
+*Note, our architecture was designed to be tested on Battery's with a constant current (CC) discharge (i.e., battery #'s 005, 006, 007, 008, 033, 034,and 036) - and is not currently equipped to handle other loading profiles.*
+
+In future versions, you will have the capability to input your own cycling data from common battery cyclers such as Arbin and MACCOR, wherein our software will compile all batteries data into one large dataset, and proceed to train/test the model. 
+
+While
+
+where is data going
+- notebook exmaple for more clarity
+
+
+## How to run the model
+
+### Where to place converted .csv files in repository 
+
+### Visulziaing data before and after preprocessing 
+ - notebook examples of what is how to 
+
+### 
+
+### 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # User Stories
 new coverage
 ### Informed Consumer

@@ -341,8 +341,22 @@ def remove_current_in_k_value(dataframe, column, k):
     return dataframe
 
 
-def capacity_during_discharge(df_discharge):
-    """TODO"""
+def capacity_during_discharge(df_discharge: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates the discharge capacity at each point in time during
+    a discharge cycle.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        The dataframe containing only the discharge cycles
+
+    Returns
+    -------
+    dataframe : pd.DataFrame
+        The dataframe with the calculated capcity during discharge
+        appended.
+    """
     capcity_during_discharge_list = []
     for i in range(len(df_discharge)):
         capcity_during_discharge_list.append(
@@ -355,8 +369,20 @@ def capacity_during_discharge(df_discharge):
     return
 
 
-def plot_remove_jump_voltage(df_discharge):
-    """TODO"""
+def plot_remove_jump_voltage(df_discharge: pd.DataFrame) -> pd.DataFrame:
+     """
+    Visualizes the effect of the remove_jump_voltage() func 
+    before and after during running.
+
+    Parameters
+    ----------
+    dataframe : pd.DataFrame
+        The dataframe containing only the discharge cycles
+
+    Returns
+    -------
+    plot : 
+    """
     _, ax = plt.subplots(1, 2, figsize=(18, 5))
     sns.scatterplot(
         data=df_discharge, x="time", y="voltage_measured", hue="cycle", ax=ax[0]
